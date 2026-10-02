@@ -4,1276 +4,5144 @@
 <meta charset="utf-8"/>
 <title>Futsal — SC BEIRA-MAR | Juvenis 2026/27</title>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <style>
-  :root{ --bg:#f5f7fb; --card:#fff; --text:#222; --accent:#2e86de; }
-  body{font-family:Inter,Arial,Helvetica,sans-serif;margin:10px;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased}
-  h1{font-size:18px;margin:0 0 8px}
-  h2{font-size:16px;margin:0 0 8px}
-  .card{background:var(--card);padding:12px;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,0.06);margin-bottom:12px}
-  label{font-weight:700}
-  input,select,button,textarea{padding:8px;border-radius:8px;border:1px solid #ccc;font-size:15px}
-  .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-  .players{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
-  .player{width:220px;border:1px solid #e6e9ef;padding:10px;border-radius:10px;background:#fff;box-sizing:border-box;display:flex;flex-direction:column;align-items:center}
-  .player .photo{width:96px;height:96px;border-radius:10px;object-fit:cover;background:#eee;display:block}
-  .player .initials{width:96px;height:96px;border-radius:10px;background:#efefef;margin-bottom:8px;display:flex;align-items:center;justify-content:center;font-weight:700;color:#666;font-size:20px}
-  .player .name{font-weight:700;text-align:center;margin-top:8px}
-  .player .actions{margin-top:10px}
-  .btn{background:#2e86de;color:#fff;border:none;padding:8px 10px;border-radius:8px;cursor:pointer;font-weight:600}
-  .btn.gray{background:#6e6e6e}
-  .btn.warn{background:#e74c3c}
-  .btn.green{background:#2a9d8f}
-  .team-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px}
-  .team-btn{border-radius:8px;padding:10px 12px;color:#fff;font-weight:700;border:none;cursor:pointer}
-  .team-btn.gos{background:#cc3333}
-  .team-btn.def{background:#2a9d8f}
-  table{width:100%;border-collapse:collapse;margin-top:8px}
-  th,td{padding:6px;border-bottom:1px solid #eee;font-size:13px;text-align:left}
-  .small{font-size:13px;color:#666}
-  .muted{color:#666;font-size:13px}
-  .event-btn{border:none;color:#fff;padding:10px 8px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;display:inline-block;margin:6px 6px;min-width:50px;min-height:44px;text-align:center;-webkit-tap-highlight-color: rgba(0,0,0,0);touch-action: manipulation;white-space:nowrap}
-  #onField{display:flex;flex-wrap:wrap;gap:8px}
-  .slotCard{width:220px;min-height:280px;border:1px dashed #cfd6e6;border-radius:12px;background:#fafcff;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:10px;box-sizing:border-box}
-  .slotCard .empty{margin-top:40px;color:#8891a7}
-  .slotHeader{display:flex;align-items:center;gap:8px;width:100%}
-  .slotHeader .badge{font-weight:700;color:#41506b}
-  .slotRemove{margin-left:auto}
-  .pos-picker{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
-  .pos-btn{border:1px solid #b7c3d6;background:#eef4ff;color:#274060;font-size:12px;border-radius:999px;padding:4px 10px;cursor:pointer}
-  .pos-btn.active{background:#2e86de;color:#fff;border-color:#2e86de}
-  .summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-top:10px}
-  .summary-box{background:#f8fbff;border:1px solid #dfe8f8;border-radius:10px;padding:10px}
-  .summary-box .big{font-size:24px;font-weight:800;line-height:1.1}
-  .chart-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:12px}
-  .chart-card{background:#fff;border:1px solid #e7ecf5;border-radius:10px;padding:10px;min-height:320px}
-  canvas{width:100% !important;height:300px !important}
-  .manual-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px}
-  .header { display:flex; align-items:center; gap:10px; margin-bottom:8px; }
-  .header .logo { width:40px; height:40px; object-fit:contain; border-radius:6px; background:#fff; }
-  .header h1 { margin:0; font-size:20px; }
-  #stickyBar{
-    position: sticky;
-    top: 0;
-    z-index: 1000;
-    background: var(--accent);
-    color: #fff;
-    padding: 8px 14px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-weight: 700;
-    font-size: 14px;
-    border-radius: 0 0 10px 10px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-    margin-bottom: 8px;
+:root{
+  --bg:#f5f7fb;
+  --card:#fff;
+  --text:#222;
+  --accent:#2e86de;
+}
+
+body{
+  font-family:Inter,Arial,Helvetica,sans-serif;
+  margin:10px;
+  background:var(--bg);
+  color:var(--text);
+  -webkit-font-smoothing:antialiased;
+}
+
+h1{font-size:18px;margin:0 0 8px}
+h2{font-size:16px;margin:0 0 8px}
+
+.card{
+  background:var(--card);
+  padding:12px;
+  border-radius:10px;
+  box-shadow:0 2px 8px rgba(0,0,0,.06);
+  margin-bottom:12px;
+}
+
+.section-title{
+  font-size:15px;
+  font-weight:800;
+  margin-bottom:8px;
+}
+
+label{font-weight:700}
+
+input,select,button,textarea{
+  padding:8px;
+  border-radius:8px;
+  border:1px solid #ccc;
+  font-size:15px;
+}
+
+.row{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  align-items:center;
+}
+
+.players{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:8px;
+}
+
+.player{
+  width:220px;
+  border:1px solid #e6e9ef;
+  padding:10px;
+  border-radius:10px;
+  background:#fff;
+  box-sizing:border-box;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+}
+
+.player .photo,
+.slotCard .photo{
+  width:96px;
+  height:96px;
+  border-radius:10px;
+  object-fit:cover;
+  background:#eee;
+  display:block;
+}
+
+.player .initials,
+.slotCard .initials{
+  width:96px;
+  height:96px;
+  border-radius:10px;
+  background:#efefef;
+  margin-bottom:8px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:700;
+  color:#666;
+  font-size:20px;
+}
+
+.player .name{
+  font-weight:700;
+  text-align:center;
+  margin-top:8px;
+}
+
+.player .actions{margin-top:10px}
+
+.btn{
+  background:#2e86de;
+  color:#fff;
+  border:none;
+  padding:8px 10px;
+  border-radius:8px;
+  cursor:pointer;
+  font-weight:600;
+}
+
+.btn.gray{background:#6e6e6e}
+.btn.warn{background:#e74c3c}
+.btn.green{background:#2a9d8f}
+
+.team-actions{
+  display:flex;
+  gap:8px;
+  align-items:center;
+  flex-wrap:wrap;
+  margin-top:10px;
+}
+
+.team-btn{
+  border-radius:8px;
+  padding:10px 12px;
+  color:#fff;
+  font-weight:700;
+  border:none;
+  cursor:pointer;
+}
+
+.team-btn.gos{background:#cc3333}
+.team-btn.def{background:#2a9d8f}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  margin-top:8px;
+}
+
+th,td{
+  padding:6px;
+  border-bottom:1px solid #eee;
+  font-size:13px;
+  text-align:left;
+}
+
+.small{
+  font-size:13px;
+  color:#666;
+}
+
+.muted{
+  color:#666;
+  font-size:13px;
+}
+
+.event-btn{
+  border:none;
+  color:#fff;
+  padding:10px 8px;
+  border-radius:8px;
+  font-size:14px;
+  font-weight:700;
+  cursor:pointer;
+  display:inline-block;
+  margin:6px;
+  min-width:50px;
+  min-height:44px;
+  text-align:center;
+  touch-action:manipulation;
+  white-space:nowrap;
+}
+
+#onField{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+}
+
+.slotCard{
+  width:220px;
+  min-height:300px;
+  border:1px dashed #cfd6e6;
+  border-radius:12px;
+  background:#fafcff;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-start;
+  padding:10px;
+  box-sizing:border-box;
+}
+
+.slotCard .empty{
+  margin-top:40px;
+  color:#8891a7;
+}
+
+.slotHeader{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  width:100%;
+}
+
+.slotHeader .badge{
+  font-weight:700;
+  color:#41506b;
+}
+
+.slotRemove{margin-left:auto}
+
+.pos-picker{
+  display:flex;
+  gap:6px;
+  flex-wrap:wrap;
+  margin-top:8px;
+}
+
+.pos-btn{
+  border:1px solid #b7c3d6;
+  background:#eef4ff;
+  color:#274060;
+  font-size:12px;
+  border-radius:999px;
+  padding:4px 10px;
+  cursor:pointer;
+}
+
+.pos-btn.active{
+  background:#2e86de;
+  color:#fff;
+  border-color:#2e86de;
+}
+
+.summary-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(170px,1fr));
+  gap:10px;
+  margin-top:10px;
+}
+
+.summary-box{
+  background:#f8fbff;
+  border:1px solid #dfe8f8;
+  border-radius:10px;
+  padding:10px;
+}
+
+.summary-box .big{
+  font-size:24px;
+  font-weight:800;
+  line-height:1.1;
+}
+
+.chart-grid{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:12px;
+  margin-top:12px;
+}
+
+.chart-card{
+  background:#fff;
+  border:1px solid #e7ecf5;
+  border-radius:10px;
+  padding:10px;
+  min-height:320px;
+}
+
+canvas{
+  width:100% !important;
+  height:300px !important;
+}
+
+.manual-row{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  align-items:center;
+  margin-top:8px;
+}
+
+.header{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-bottom:8px;
+}
+
+.header .logo{
+  width:40px;
+  height:40px;
+  object-fit:contain;
+  border-radius:6px;
+  background:#fff;
+}
+
+.header h1{
+  margin:0;
+  font-size:20px;
+}
+
+#stickyBar{
+  position:sticky;
+  top:0;
+  z-index:1000;
+  background:var(--accent);
+  color:#fff;
+  padding:8px 14px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  font-weight:700;
+  font-size:14px;
+  border-radius:0 0 10px 10px;
+  box-shadow:0 2px 8px rgba(0,0,0,.15);
+  margin-bottom:8px;
+}
+
+#stickyBar span{white-space:nowrap}
+
+#legendModal{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.5);
+  align-items:center;
+  justify-content:center;
+  z-index:9999;
+}
+
+#legendModal .panel{
+  background:#fff;
+  padding:16px;
+  border-radius:10px;
+  max-width:720px;
+  width:94%;
+  max-height:90vh;
+  overflow:auto;
+}
+
+#legendContent div.row{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:6px 0;
+  border-bottom:1px solid #eee;
+}
+
+@media(max-width:900px){
+  .player,.slotCard{width:48%}
+}
+
+@media(max-width:700px){
+  .chart-grid{grid-template-columns:1fr}
+}
+
+@media(max-width:520px){
+  .player,.slotCard{width:100%}
+
+  .event-btn{
+    min-width:64px;
+    padding:12px 10px;
+    font-size:15px;
   }
-  #stickyBar span{white-space:nowrap}
-  #legendModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);align-items:center;justify-content:center;z-index:9999}
-  #legendModal .panel{background:#fff;padding:16px;border-radius:10px;max-width:720px;width:94%;max-height:90vh;overflow:auto}
-  #legendContent div.row{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid #eee}
-  @media (max-width:900px){ .player,.slotCard{width:48%} }
-  @media (max-width:700px){ .chart-grid{grid-template-columns:1fr} }
-  @media (max-width:520px){
-    .player,.slotCard{width:100%}
-    .event-btn{min-width:64px;padding:12px 10px;font-size:15px}
-    input,select,button,textarea{font-size:16px;padding:10px;border-radius:10px}
-    .card{padding:14px}
-    .manual-row{flex-direction:column;align-items:stretch}
-    #legendModal .panel{width:98%;height:92vh;border-radius:12px;padding:14px}
-    #legendContent{font-size:15px}
+
+  input,select,button,textarea{
+    font-size:16px;
+    padding:10px;
+    border-radius:10px;
   }
+
+  .card{padding:14px}
+
+  .manual-row{
+    flex-direction:column;
+    align-items:stretch;
+  }
+
+  #legendModal .panel{
+    width:98%;
+    height:92vh;
+    border-radius:12px;
+    padding:14px;
+  }
+}
 </style>
 </head>
+
 <body>
+
 <div id="stickyBar">
   <span id="stickyPart">—</span>
   <span id="stickyElapsed">00:00</span>
   <span id="stickyScore">0 - 0</span>
 </div>
+
 <div class="header">
-  <img class="logo" src="images/SCBM.jpg" alt="SC Beira-Mar" onerror="this.style.display='none'">
+  <img class="logo"
+       src="images/SCBM.jpg"
+       alt="SC Beira-Mar"
+       onerror="this.style.display='none'">
   <h1>Futsal SC BEIRA-MAR — Juvenis 2026/27</h1>
 </div>
 
-<button id="legendBtn" class="btn gray" style="margin-bottom:8px" type="button">Legenda</button>
+<button id="legendBtn"
+        class="btn gray"
+        style="margin-bottom:8px"
+        type="button">
+  Legenda
+</button>
 
 <div id="legendModal" aria-hidden="true">
   <div class="panel">
     <h3 style="margin-top:0">Legenda de Eventos</h3>
     <div id="legendContent"></div>
+
     <div style="text-align:right;margin-top:12px">
-      <button id="closeLegend" class="btn gray" type="button">Fechar</button>
+      <button id="closeLegend"
+              class="btn gray"
+              type="button">
+        Fechar
+      </button>
     </div>
   </div>
 </div>
 
+
+<!-- =========================================================
+     BLOCO 1 — IMPORTAÇÃO
+========================================================= -->
+
 <div class="card">
-  <label>Informação do Jogo</label>
-  <div class="row" style="margin-top:8px;">
-    <input id="session_id" placeholder="Equipa adversária" style="width:200px" />
-    <input id="date" type="date" />
-    <input id="time" type="time" />
-    <input id="location" placeholder="Local" style="width:220px" />
-    <input id="competition" placeholder="Competição" />
-    <input id="round" placeholder="Jornada" style="width:90px" />
+
+  <div class="section-title">
+    1. Importação de ficheiros
   </div>
 
-  <div class="row" style="margin-top:10px;">
-    <button id="saveSession" class="btn" type="button">Salvar Sessão</button>
-    <button id="startPart" class="btn green" type="button">Start 1ª Parte</button>
-    <button id="startPart2" class="btn green" type="button">Start 2ª Parte</button>
-    <button id="pauseClock" class="btn gray" type="button">Pausar relógio</button>
-    <button id="resumeClock" class="btn" type="button">Retomar relógio</button>
-    <button id="resetClock" class="btn warn" type="button">Reset Relógio</button>
+  <div class="small">
+    Ficheiro CSV / Excel com as colunas
+    <strong>number</strong>,
+    <strong>photo</strong> (opcional) e
+    <strong>name</strong>.
   </div>
- 
+
+  <div class="row" style="margin-top:8px">
+
+    <input id="fileInput"
+           type="file"
+           accept=".csv,.tsv,.xlsx,.xls">
+
+    <button id="importBtn"
+            class="btn gray"
+            type="button">
+      Importar
+    </button>
+
+    <button id="clearConv"
+            class="btn warn"
+            type="button">
+      Limpar
+    </button>
+
+    <div id="importStatus"
+         class="small"
+         style="margin-left:8px">
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- =========================================================
+     BLOCO 2 — GUARDAR / ABRIR
+========================================================= -->
+
+<div class="card">
+
+  <div class="section-title">
+    2. Gravação de ficheiros
+  </div>
+
+  <div class="row">
+
+    <button id="saveGameBtn"
+            class="btn green"
+            type="button">
+      Guardar jogo
+    </button>
+
+    <button id="loadGameBtn"
+            class="btn gray"
+            type="button">
+      Abrir jogo
+    </button>
+
+    <input type="file"
+           id="loadGameFile"
+           accept=".json"
+           style="display:none">
+
+    <div class="muted"
+         style="margin-left:8px">
+      Eventos:
+      <span id="queueCount">0</span>
+    </div>
+
+  </div>
+
+  <div class="small"
+       style="margin-top:8px">
+    Guardar jogo cria um ficheiro JSON que permite retomar posteriormente a sessão.
+  </div>
+
+</div>
+
+
+<!-- =========================================================
+     BLOCO 3 — INFORMAÇÃO DO JOGO
+========================================================= -->
+
+<div class="card">
+
+  <div class="section-title">
+    3. Informação do jogo
+  </div>
+
+  <div class="row" style="margin-top:8px">
+
+    <input id="session_id"
+           placeholder="Equipa adversária"
+           style="width:200px">
+
+    <input id="date"
+           type="date">
+
+    <input id="time"
+           type="time">
+
+    <input id="location"
+           placeholder="Local"
+           style="width:220px">
+
+    <input id="competition"
+           placeholder="Competição">
+
+    <input id="round"
+           placeholder="Jornada"
+           style="width:90px">
+
+  </div>
+
+  <div class="row" style="margin-top:10px">
+
+    <button id="saveSession"
+            class="btn"
+            type="button">
+      Salvar Sessão
+    </button>
+
+    <button id="startPart"
+            class="btn green"
+            type="button">
+      Start 1ª Parte
+    </button>
+
+    <button id="startPart2"
+            class="btn green"
+            type="button">
+      Start 2ª Parte
+    </button>
+
+    <button id="pauseClock"
+            class="btn gray"
+            type="button">
+      Pausar relógio
+    </button>
+
+    <button id="resumeClock"
+            class="btn"
+            type="button">
+      Retomar relógio
+    </button>
+
+    <button id="resetClock"
+            class="btn warn"
+            type="button">
+      Reset Relógio
+    </button>
+
+  </div>
+
   <div class="summary-grid">
+
     <div class="summary-box">
       <div class="small">Parte atual</div>
       <div id="livePart" class="big">—</div>
     </div>
+
     <div class="summary-box">
       <div class="small">Tempo decorrido</div>
       <div id="liveElapsedPart" class="big">00:00</div>
     </div>
+
     <div class="summary-box">
       <div class="small">Resultado</div>
       <div id="liveScore" class="big">0 - 0</div>
     </div>
+
   </div>
+
 </div>
 
-<div class="card">
-  <label>Importar convocados (CSV / Excel)</label>
-  <div class="small" style="margin-top:6px">Colunas: <strong>number</strong>, <strong>photo</strong> (opcional), <strong>name</strong></div>
-  <div class="row" style="margin-top:8px;">
-    <input id="fileInput" type="file" accept=".csv,.tsv,.xlsx,.xls" />
-    <button id="importBtn" class="btn gray" type="button">Importar</button>
-    <button id="clearConv" class="btn warn" type="button">Limpar</button>
-    <div id="importStatus" class="small" style="margin-left:8px"></div>
-  </div>
-</div>
+
+<!-- =========================================================
+     CONVOCADOS
+========================================================= -->
 
 <div class="card">
+
   <label>Convocados</label>
-  <div id="roster" class="players" style="margin-top:8px"></div>
-</div>
 
-<div class="card">
-  <div class="row" style="justify-content:space-between;align-items:center">
-    <label>Em Campo — 5 Jogadores (com eventos)</label>
-    <button id="clearSlots" class="btn gray" type="button">Limpar Campo</button>
+  <div id="roster"
+       class="players"
+       style="margin-top:8px">
   </div>
 
-  <div class="team-actions" style="margin-top:10px">
-    <button id="team_gos" class="team-btn gos" type="button">Golo sofrido</button>
-    <button id="team_def" class="team-btn def" type="button">Defesa do GR</button>
-  </div>
-
-  <div id="onField" style="margin-top:12px"></div>
-  <div class="small" style="margin-top:8px">Para adicionar, usa “Entrar” no cartão do convocado. Em campo podes definir posição rápida.</div>
 </div>
 
+
+<!-- =========================================================
+     EM CAMPO
+========================================================= -->
+
 <div class="card">
-  <h2>Resumo final do jogo</h2>
+
+  <div class="row"
+       style="justify-content:space-between;align-items:center">
+
+    <label>
+      Em Campo — 5 Jogadores
+    </label>
+
+    <button id="clearSlots"
+            class="btn gray"
+            type="button">
+      Limpar Campo
+    </button>
+
+  </div>
+
+  <div class="team-actions">
+
+    <button id="team_gos"
+            class="team-btn gos"
+            type="button">
+      Golo sofrido
+    </button>
+
+    <button id="team_def"
+            class="team-btn def"
+            type="button">
+      Defesa do GR
+    </button>
+
+  </div>
+
+  <div id="onField"
+       style="margin-top:12px">
+  </div>
+
+  <div class="small"
+       style="margin-top:8px">
+    Para adicionar, usa “Entrar” no cartão do convocado.
+    O <strong>Tempo em jogo</strong> é acumulado.
+    O <strong>Tempo na quadra</strong> corresponde à entrada atual.
+  </div>
+
+</div>
+
+
+<!-- =========================================================
+     RESUMO
+========================================================= -->
+
+<div class="card">
+
+  <h2>Resumo do jogo</h2>
+
   <div class="summary-grid">
-    <div class="summary-box"><div class="small">Golos marcados</div><div id="sumGoalsFor" class="big">0</div></div>
-    <div class="summary-box"><div class="small">Golos sofridos</div><div id="sumGoalsAgainst" class="big">0</div></div>
-    <div class="summary-box"><div class="small">Remates à baliza</div><div id="sumShotsOn" class="big">0</div></div>
-    <div class="summary-box"><div class="small">Remates fora</div><div id="sumShotsOff" class="big">0</div></div>
-    <div class="summary-box"><div class="small">Recuperações</div><div id="sumRecoveries" class="big">0</div></div>
-    <div class="summary-box"><div class="small">Perdas</div><div id="sumLosses" class="big">0</div></div>
+
+    <div class="summary-box">
+      <div class="small">Golos marcados</div>
+      <div id="sumGoalsFor" class="big">0</div>
+    </div>
+
+    <div class="summary-box">
+      <div class="small">Golos sofridos</div>
+      <div id="sumGoalsAgainst" class="big">0</div>
+    </div>
+
+    <div class="summary-box">
+      <div class="small">Remates à baliza</div>
+      <div id="sumShotsOn" class="big">0</div>
+    </div>
+
+    <div class="summary-box">
+      <div class="small">Remates fora</div>
+      <div id="sumShotsOff" class="big">0</div>
+    </div>
+
+    <div class="summary-box">
+      <div class="small">Recuperações</div>
+      <div id="sumRecoveries" class="big">0</div>
+    </div>
+
+    <div class="summary-box">
+      <div class="small">Perdas</div>
+      <div id="sumLosses" class="big">0</div>
+    </div>
+
   </div>
 
   <div style="margin-top:14px">
-    <label>Estatísticas automáticas por jogador</label>
+
+    <label>
+      Estatísticas automáticas por jogador
+    </label>
+
     <table id="playerStatsTable">
+
       <thead>
         <tr>
-          <th>#</th><th>Jogador</th><th>Tempo total</th><th>Golos</th><th>Assist.</th><th>RAB</th><th>RFB</th><th>REC</th><th>PER</th><th>FCO</th><th>FSO</th><th>DEF</th>
+          <th>#</th>
+          <th>Jogador</th>
+          <th>Tempo em jogo</th>
+          <th>Golos</th>
+          <th>Assist.</th>
+          <th>RAB</th>
+          <th>RFB</th>
+          <th>REC</th>
+          <th>PER</th>
+          <th>FCO</th>
+          <th>FSO</th>
+          <th>DEF</th>
         </tr>
       </thead>
+
       <tbody></tbody>
+
     </table>
+
   </div>
 
   <div class="chart-grid">
-    <div class="chart-card"><canvas id="chartPlayerMinutes"></canvas></div>
-    <div class="chart-card"><canvas id="chartActions"></canvas></div>
-    <div class="chart-card" style="grid-column:span 2;"><canvas id="chartIntensity"></canvas></div>
+
+    <div class="chart-card">
+      <canvas id="chartPlayerMinutes"></canvas>
+    </div>
+
+    <div class="chart-card">
+      <canvas id="chartActions"></canvas>
+    </div>
+
+    <div class="chart-card"
+         style="grid-column:span 2">
+      <canvas id="chartIntensity"></canvas>
+    </div>
+
   </div>
+
 </div>
 
+
+<!-- =========================================================
+     EVENTOS / EXPORTAÇÃO
+========================================================= -->
+
 <div class="card">
-  <div class="row">
-    <button id="exportBtn" class="btn" type="button">Exportar Eventos CSV</button>
-    <button id="saveGameBtn" class="btn green" type="button">Guardar jogo</button>
-    <button id="loadGameBtn" class="btn gray" type="button">Abrir jogo</button>
-    <input type="file" id="loadGameFile" accept=".json" style="display:none">
-    
-    <div class="muted" style="margin-left:8px">Eventos: <span id="queueCount">0</span></div>
+
+  <div class="row"
+       style="justify-content:space-between">
+
+    <label>
+      Registo de eventos
+    </label>
+
+    <button id="exportBtn"
+            class="btn"
+            type="button">
+      Exportar Eventos CSV
+    </button>
+
   </div>
 
-  <div class="manual-form card" style="margin-top:12px">
-    <label>Adicionar Evento Manual (Avaliação)</label>
+  <div class="manual-form card"
+       style="margin-top:12px">
+
+    <label>
+      Adicionar Evento Manual (Avaliação)
+    </label>
+
     <div class="manual-row">
-      <select id="manualPlayer" style="min-width:200px">
-        <option value="">(Equipa)</option>
+
+      <select id="manualPlayer"
+              style="min-width:200px">
+        <option value="">
+          (Equipa)
+        </option>
       </select>
-      <select id="manualCode" style="min-width:320px"></select>
+
+      <select id="manualCode"
+              style="min-width:320px">
+      </select>
+
     </div>
+
     <div class="manual-row">
-      <select id="manualRating" style="width:160px">
-        <option value="">Sem avaliação</option>
-        <option value="1">A melhorar</option>
-        <option value="5">Muito Bom</option>
+
+      <select id="manualRating"
+              style="width:160px">
+
+        <option value="">
+          Sem avaliação
+        </option>
+
+        <option value="1">
+          A melhorar
+        </option>
+
+        <option value="5">
+          Muito Bom
+        </option>
+
       </select>
-      <input id="manualNote" placeholder="Nota (opcional) — cria também evento NOTA com timestamp" style="flex:1" />
+
+      <input id="manualNote"
+             placeholder="Nota (opcional)"
+             style="flex:1">
+
     </div>
+
     <div style="text-align:right;margin-top:8px">
-      <button id="manualAdd" class="btn" type="button">Adicionar Evento de Avaliação</button>
+
+      <button id="manualAdd"
+              class="btn"
+              type="button">
+        Adicionar Evento de Avaliação
+      </button>
+
     </div>
+
   </div>
 
   <div style="margin-top:10px">
+
     <label>Events Log</label>
+
     <table id="eventsTable">
+
       <thead>
-        <tr><th>#</th><th>Min</th><th>Parte</th><th>Tempo</th><th>Player</th><th>Evento</th><th>Sigla</th><th>Avaliação</th><th>Nota</th><th>Timestamp</th></tr>
+        <tr>
+          <th>#</th>
+          <th>Min</th>
+          <th>Parte</th>
+          <th>Player</th>
+          <th>Evento</th>
+          <th>Sigla</th>
+          <th>Avaliação</th>
+          <th>Nota</th>
+          <th>Timestamp</th>
+        </tr>
       </thead>
+
       <tbody></tbody>
+
     </table>
+
   </div>
+
 </div>
 
+
 <script>
+
+/* ============================================================
+   EVENTOS
+============================================================ */
+
 const eventMeta = {
-  "ENT":  { label: "Entrou em campo",                   type:1, sigla:"ENT" },
-  "SAI":  { label: "Sai de campo",                      type:1, sigla:"SAI" },
-  "GOL":  { label: "Golo marcado",                      type:2, sigla:"GOL" },
-  "GOS":  { label: "Golo sofrido (equipa)",             type:2, sigla:"GOS" },
-  "RAB":  { label: "Remate à baliza",                   type:3, sigla:"RAB" },
-  "RFB":  { label: "Remate fora",                       type:3, sigla:"RFB" },
-  "REC":  { label: "Recuperação de bola / Intercepção", type:4, sigla:"REC" },
-  "PER":  { label: "Perda de bola",                     type:4, sigla:"PER" },
-  "ASS":  { label: "Assistência",                       type:4, sigla:"ASS" },
-  "FCO":  { label: "Falta cometida",                    type:5, sigla:"FCO" },
-  "FSO":  { label: "Falta sofrida",                     type:5, sigla:"FSO" },
-  "DEF":  { label: "Defesa do GR",                      type:6, sigla:"DEF" },
-  "FAI":  { label: "Fair play",                         type:7, sigla:"FAI" },
-  "DT":   { label: "Desconto de tempo / Pausa",         type:7, sigla:"DT" },
-  "NOTE": { label: "Nota",                              type:8, sigla:"NOTA" },
-  "P_FIXO":  { label: "Posição: Fixo",  type:1, sigla:"POS" },
-  "P_ALA":   { label: "Posição: Ala",   type:1, sigla:"POS" },
-  "P_PIVOT": { label: "Posição: Pivot", type:1, sigla:"POS" },
-  "P_GR":    { label: "Posição: GR",    type:1, sigla:"POS" }
+
+  ENT:{label:"Entrou em campo",type:1,sigla:"ENT"},
+  SAI:{label:"Sai de campo",type:1,sigla:"SAI"},
+
+  GOL:{label:"Golo marcado",type:2,sigla:"GOL"},
+  GOS:{label:"Golo sofrido (equipa)",type:2,sigla:"GOS"},
+
+  RAB:{label:"Remate à baliza",type:3,sigla:"RAB"},
+  RFB:{label:"Remate fora",type:3,sigla:"RFB"},
+
+  REC:{label:"Recuperação de bola / Intercepção",type:4,sigla:"REC"},
+  PER:{label:"Perda de bola",type:4,sigla:"PER"},
+  ASS:{label:"Assistência",type:4,sigla:"ASS"},
+
+  FCO:{label:"Falta cometida",type:5,sigla:"FCO"},
+  FSO:{label:"Falta sofrida",type:5,sigla:"FSO"},
+
+  DEF:{label:"Defesa do GR",type:6,sigla:"DEF"},
+
+  FAI:{label:"Fair play",type:7,sigla:"FAI"},
+  DT:{label:"Desconto de tempo / Pausa",type:7,sigla:"DT"},
+
+  NOTE:{label:"Nota",type:8,sigla:"NOTA"},
+
+  P_FIXO:{label:"Posição: Fixo",type:1,sigla:"POS"},
+  P_ALA:{label:"Posição: Ala",type:1,sigla:"POS"},
+  P_PIVOT:{label:"Posição: Pivot",type:1,sigla:"POS"},
+  P_GR:{label:"Posição: GR",type:1,sigla:"POS"}
 };
+
 
 const assessments = {
-  "AS_POS": { label: "Posicionamento (TÁTICO)", type:1, sigla:"POS" },
-  "AS_COV": { label: "Coberturas e ajudas defensivas (TÁTICO)", type:1, sigla:"COV" },
-  "AS_APO": { label: "Apoio ao portador da bola (TÁTICO)", type:1, sigla:"APO" },
-  "AS_PART":{ label: "Participação em jogadas (TÉCNICO / JOGADA)", type:3, sigla:"PART" },
-  "AS_ATA": { label: "Ataque à bola (TÉCNICO)", type:3, sigla:"ATA" },
-  "AS_PIS": { label: "Pisar a bola (controlo/recepção) (TÉCNICO)", type:3, sigla:"PIS" },
-  "AS_CUM": { label: "Cumprimento de instruções (COMPORTAMENTAL)", type:5, sigla:"CUM" },
-  "AS_ENV": { label: "Envolvimento (COMPORTAMENTAL)", type:5, sigla:"ENV" },
-  "AS_ATT": { label: "Atitude e comportamento (COMPORTAMENTAL)", type:5, sigla:"ATT" },
-  "AS_INT": { label: "Intensidade no jogo (FÍSICO)", type:6, sigla:"INT" },
-  "AS_OUT": { label: "Outro", type:8, sigla:"OUT" }
+
+  AS_POS:{
+    label:"Posicionamento (TÁTICO)",
+    type:1,
+    sigla:"POS"
+  },
+
+  AS_COV:{
+    label:"Coberturas e ajudas defensivas (TÁTICO)",
+    type:1,
+    sigla:"COV"
+  },
+
+  AS_APO:{
+    label:"Apoio ao portador da bola (TÁTICO)",
+    type:1,
+    sigla:"APO"
+  },
+
+  AS_PART:{
+    label:"Participação em jogadas (TÉCNICO / JOGADA)",
+    type:3,
+    sigla:"PART"
+  },
+
+  AS_ATA:{
+    label:"Ataque à bola (TÉCNICO)",
+    type:3,
+    sigla:"ATA"
+  },
+
+  AS_PIS:{
+    label:"Pisar a bola (controlo/recepção) (TÉCNICO)",
+    type:3,
+    sigla:"PIS"
+  },
+
+  AS_CUM:{
+    label:"Cumprimento de instruções (COMPORTAMENTAL)",
+    type:5,
+    sigla:"CUM"
+  },
+
+  AS_ENV:{
+    label:"Envolvimento (COMPORTAMENTAL)",
+    type:5,
+    sigla:"ENV"
+  },
+
+  AS_ATT:{
+    label:"Atitude e comportamento (COMPORTAMENTAL)",
+    type:5,
+    sigla:"ATT"
+  },
+
+  AS_INT:{
+    label:"Intensidade no jogo (FÍSICO)",
+    type:6,
+    sigla:"INT"
+  },
+
+  AS_OUT:{
+    label:"Outro",
+    type:8,
+    sigla:"OUT"
+  }
+
 };
-for(const k in assessments) eventMeta[k] = assessments[k];
 
-const PRIORITY_EVENT_CODES = ["GOL","RAB","RFB","REC","PER","ASS","FCO","FSO","FAI"];
-const typeColors = {1:"#0F4C81",2:"#186FAF",3:"#228ED7",4:"#33A4F0",5:"#57B5F7",6:"#2a9d8f",7:"#AEE0FF",8:"#DFF6FF" };
 
-const STORAGE_ROSTER='juvenis_convocados_roster_v1';
-const STORAGE_QUEUE='juvenis_events_queue_v1';
-const STORAGE_SESSION='juvenis_session_v2';
-const STORAGE_ONFIELD='juvenis_onfield_v1';
+for(const k in assessments){
+  eventMeta[k] = assessments[k];
+}
 
-let ROSTER=JSON.parse(localStorage.getItem(STORAGE_ROSTER)||'[]');
-let queue=JSON.parse(localStorage.getItem(STORAGE_QUEUE)||'[]');
-let session=JSON.parse(localStorage.getItem(STORAGE_SESSION)||'{}');
-let onField=JSON.parse(localStorage.getItem(STORAGE_ONFIELD)||'[]');
+
+const PRIORITY_EVENT_CODES =
+[
+  "GOL",
+  "RAB",
+  "RFB",
+  "REC",
+  "PER",
+  "ASS",
+  "FCO",
+  "FSO",
+  "FAI"
+];
+
+
+const typeColors =
+{
+  1:"#0F4C81",
+  2:"#186FAF",
+  3:"#228ED7",
+  4:"#33A4F0",
+  5:"#57B5F7",
+  6:"#2a9d8f",
+  7:"#AEE0FF",
+  8:"#DFF6FF"
+};
+
+
+/* ============================================================
+   STORAGE
+============================================================ */
+
+const STORAGE_ROSTER =
+  'juvenis_convocados_roster_v2';
+
+const STORAGE_QUEUE =
+  'juvenis_events_queue_v2';
+
+const STORAGE_SESSION =
+  'juvenis_session_v3';
+
+const STORAGE_ONFIELD =
+  'juvenis_onfield_v2';
+
+
+let ROSTER =
+  JSON.parse(
+    localStorage.getItem(STORAGE_ROSTER) || '[]'
+  );
+
+let queue =
+  JSON.parse(
+    localStorage.getItem(STORAGE_QUEUE) || '[]'
+  );
+
+let session =
+  JSON.parse(
+    localStorage.getItem(STORAGE_SESSION) || '{}'
+  );
+
+let onField =
+  JSON.parse(
+    localStorage.getItem(STORAGE_ONFIELD) || '[]'
+  );
+
 let charts = {};
 
-function normalizeOnFieldEntry(x){ if(!x) return null; if(typeof x==='number') return {number:x, position:null}; return { number:x.number, position:x.position||null }; }
-function ensureOnFieldShape(){ if(!onField || !onField.length) onField=[null,null,null,null,null]; onField=onField.map(normalizeOnFieldEntry).slice(0,5); while(onField.length<5) onField.push(null); }
-function inOnField(num){ return onField.findIndex(s=>s && s.number===num) !== -1; }
-function nowISO(){ return new Date().toISOString(); }
-function pad2(n){ return String(n).padStart(2,'0'); }
-function formatSeconds(totalSeconds){ totalSeconds=Math.max(0,Math.floor(totalSeconds||0)); const h=Math.floor(totalSeconds/3600); const m=Math.floor((totalSeconds%3600)/60); const s=totalSeconds%60; if(h>0) return `${pad2(h)}:${pad2(m)}:${pad2(s)}`; return `${pad2(m)}:${pad2(s)}`; }
-function formatMMSS(seconds){ seconds=Math.max(0,Math.floor(seconds||0)); const m=Math.floor(seconds/60); const s=seconds%60; return `${pad2(m)}:${pad2(s)}`; }
+let lastIntensityMinuteRendered = -1;
+let lastQueueSizeRendered = -1;
+
+
+/* ============================================================
+   HELPERS
+============================================================ */
+
+function normalizeOnFieldEntry(x){
+
+  if(!x) return null;
+
+  if(typeof x === 'number'){
+    return {
+      number:x,
+      position:null
+    };
+  }
+
+  return {
+    number:x.number,
+    position:x.position || null
+  };
+}
+
+
+function ensureOnFieldShape(){
+
+  if(!onField || !onField.length){
+
+    onField =
+    [
+      null,
+      null,
+      null,
+      null,
+      null
+    ];
+
+  }
+
+  onField =
+    onField
+      .map(normalizeOnFieldEntry)
+      .slice(0,5);
+
+  while(onField.length < 5){
+    onField.push(null);
+  }
+
+}
+
+
+function inOnField(num){
+
+  return onField.findIndex(
+    s =>
+      s &&
+      s.number === num
+  ) !== -1;
+
+}
+
+
+function nowISO(){
+
+  return new Date().toISOString();
+
+}
+
+
+function pad2(n){
+
+  return String(n).padStart(2,'0');
+
+}
+
+
+function formatSeconds(totalSeconds){
+
+  totalSeconds =
+    Math.max(
+      0,
+      Math.floor(totalSeconds || 0)
+    );
+
+  const h =
+    Math.floor(totalSeconds / 3600);
+
+  const m =
+    Math.floor(
+      (totalSeconds % 3600) / 60
+    );
+
+  const s =
+    totalSeconds % 60;
+
+  if(h > 0){
+
+    return (
+      `${pad2(h)}:` +
+      `${pad2(m)}:` +
+      `${pad2(s)}`
+    );
+
+  }
+
+  return (
+    `${pad2(m)}:` +
+    `${pad2(s)}`
+  );
+
+}
+
+
+function formatMMSS(seconds){
+
+  seconds =
+    Math.max(
+      0,
+      Math.floor(seconds || 0)
+    );
+
+  return (
+    `${pad2(Math.floor(seconds / 60))}:` +
+    `${pad2(seconds % 60)}`
+  );
+
+}
+
+
+/* ============================================================
+   RELÓGIO
+============================================================ */
 
 function defaultSessionState(){
-  if(typeof session.clockRunning !== 'boolean') session.clockRunning = false;
-  if(typeof session.part1_elapsed_offset !== 'number' || session.part1_elapsed_offset < 0) session.part1_elapsed_offset = 0;
-  if(typeof session.part2_elapsed_offset !== 'number' || session.part2_elapsed_offset < 0) session.part2_elapsed_offset = 0;
-  if(session.part1_running_since === undefined) session.part1_running_since = null;
-  if(session.part2_running_since === undefined) session.part2_running_since = null;
+
+  if(typeof session.clockRunning !== 'boolean'){
+    session.clockRunning = false;
+  }
+
+  if(
+    typeof session.part1_elapsed_offset !== 'number' ||
+    session.part1_elapsed_offset < 0
+  ){
+    session.part1_elapsed_offset = 0;
+  }
+
+  if(
+    typeof session.part2_elapsed_offset !== 'number' ||
+    session.part2_elapsed_offset < 0
+  ){
+    session.part2_elapsed_offset = 0;
+  }
+
+  if(session.part1_running_since === undefined){
+    session.part1_running_since = null;
+  }
+
+  if(session.part2_running_since === undefined){
+    session.part2_running_since = null;
+  }
+
+  if(session.currentPart === undefined){
+    session.currentPart = null;
+  }
+
 }
 
-function saveAll(){
-  localStorage.setItem(STORAGE_ROSTER, JSON.stringify(ROSTER));
-  localStorage.setItem(STORAGE_QUEUE, JSON.stringify(queue));
-  localStorage.setItem(STORAGE_SESSION, JSON.stringify(session));
-  localStorage.setItem(STORAGE_ONFIELD, JSON.stringify(onField));
-  renderAll();
-}
-
-function fillSessionInputs(){
-  document.getElementById('session_id').value=session.session_id||'';
-  document.getElementById('date').value=session.date||'';
-  document.getElementById('time').value=session.time||'';
-  document.getElementById('location').value=session.location||'';
-  document.getElementById('competition').value=session.competition||'';
-  document.getElementById('round').value=session.round||'';
-}
 
 function getElapsedForPart(part){
+
   defaultSessionState();
-  const offset = part === 1 ? (session.part1_elapsed_offset || 0) : (session.part2_elapsed_offset || 0);
-  const runningSince = part === 1 ? session.part1_running_since : session.part2_running_since;
+
+  const offset =
+    part === 1
+      ? session.part1_elapsed_offset || 0
+      : session.part2_elapsed_offset || 0;
+
+  const runningSince =
+    part === 1
+      ? session.part1_running_since
+      : session.part2_running_since;
+
   let live = 0;
-  if(session.clockRunning && session.currentPart === part && runningSince){
-    live = Math.floor((Date.now() - new Date(runningSince).getTime()) / 1000);
+
+  if(
+    session.clockRunning &&
+    session.currentPart === part &&
+    runningSince
+  ){
+
+    live =
+      Math.floor(
+        (
+          Date.now() -
+          new Date(runningSince).getTime()
+        ) / 1000
+      );
+
   }
-  return Math.max(0, offset + live);
+
+  return Math.max(
+    0,
+    offset + live
+  );
+
 }
 
-function getElapsedDisplayForPart(part){
-  return getElapsedForPart(part);
+
+/*
+  Tempo oficial efetivamente jogado.
+  Intervalos e pausas não contam.
+*/
+
+function getGameElapsedSeconds(){
+
+  return (
+    getElapsedForPart(1) +
+    getElapsedForPart(2)
+  );
+
 }
+
+
+function commitRunningClock(){
+
+  defaultSessionState();
+
+  if(
+    !session.clockRunning ||
+    !session.currentPart
+  ){
+    return;
+  }
+
+  const part =
+    session.currentPart;
+
+  const runningSince =
+    part === 1
+      ? session.part1_running_since
+      : session.part2_running_since;
+
+  if(runningSince){
+
+    const add =
+      Math.max(
+        0,
+        Math.floor(
+          (
+            Date.now() -
+            new Date(runningSince).getTime()
+          ) / 1000
+        )
+      );
+
+    if(part === 1){
+
+      session.part1_elapsed_offset =
+        (session.part1_elapsed_offset || 0)
+        + add;
+
+      session.part1_running_since =
+        null;
+
+    }else{
+
+      session.part2_elapsed_offset =
+        (session.part2_elapsed_offset || 0)
+        + add;
+
+      session.part2_running_since =
+        null;
+
+    }
+
+  }
+
+  session.clockRunning = false;
+
+}
+
+
+/* ============================================================
+   SAVE
+============================================================ */
+
+function saveAll(){
+
+  localStorage.setItem(
+    STORAGE_ROSTER,
+    JSON.stringify(ROSTER)
+  );
+
+  localStorage.setItem(
+    STORAGE_QUEUE,
+    JSON.stringify(queue)
+  );
+
+  localStorage.setItem(
+    STORAGE_SESSION,
+    JSON.stringify(session)
+  );
+
+  localStorage.setItem(
+    STORAGE_ONFIELD,
+    JSON.stringify(onField)
+  );
+
+  renderAll();
+
+}
+
+
+/* ============================================================
+   SESSÃO
+============================================================ */
+
+function fillSessionInputs(){
+
+  document.getElementById('session_id').value =
+    session.session_id || '';
+
+  document.getElementById('date').value =
+    session.date || '';
+
+  document.getElementById('time').value =
+    session.time || '';
+
+  document.getElementById('location').value =
+    session.location || '';
+
+  document.getElementById('competition').value =
+    session.competition || '';
+
+  document.getElementById('round').value =
+    session.round || '';
+
+}
+
 
 function getScore(){
-  let marcados = 0, sofridos = 0;
+
+  let marcados = 0;
+  let sofridos = 0;
+
   for(const ev of queue){
-    if(ev.event_code === 'GOL') marcados++;
-    if(ev.event_code === 'GOS') sofridos++;
+
+    if(ev.event_code === 'GOL'){
+      marcados++;
+    }
+
+    if(ev.event_code === 'GOS'){
+      sofridos++;
+    }
+
   }
-  return { marcados, sofridos };
+
+  return {
+    marcados,
+    sofridos
+  };
+
 }
 
-function computeMinute(ts, partOverride){
-  const part = partOverride || session.currentPart || 1;
-  const elapsed = part === 2 ? getElapsedForPart(2) : getElapsedForPart(1);
-  return Math.max(0, Math.floor(elapsed / 60));
+
+function computeMinute(){
+
+  const part =
+    session.currentPart || 1;
+
+  return Math.max(
+    0,
+    Math.floor(
+      getElapsedForPart(part) / 60
+    )
+  );
+
 }
+
 
 function hasEventsInPart(part){
-  return queue.some(ev => ev.part === part);
+
+  return queue.some(
+    ev =>
+      ev.part === part
+  );
+
 }
 
-function getPhotoSrc(p){ if(!p) return null; if(p.photo) return 'images/' + p.photo; return 'images/' + p.number + '.jpg'; }
+
+function getPhotoSrc(p){
+
+  if(!p){
+    return null;
+  }
+
+  if(p.photo){
+    return 'images/' + p.photo;
+  }
+
+  return 'images/' + p.number + '.jpg';
+
+}
+
+
+/* ============================================================
+   CSV
+============================================================ */
 
 function parseCSV(text){
-  text = String(text || '').replace(/^\uFEFF/, '');
-  const lines = text.split(/\r?\n/).filter(l => l.trim() !== '');
-  if(lines.length === 0) return [];
 
-  const first = lines[0];
-  const delimiters = [',',';','\t'];
+  text =
+    String(text || '')
+      .replace(/^\uFEFF/, '');
+
+  const lines =
+    text
+      .split(/\r?\n/)
+      .filter(
+        l =>
+          l.trim() !== ''
+      );
+
+  if(!lines.length){
+    return [];
+  }
+
+  const first =
+    lines[0];
+
+  const delimiters =
+    [',',';','\t'];
+
   let delim = ',';
   let best = -1;
+
   for(const d of delimiters){
-    const count = first.split(d).length - 1;
-    if(count > best){ best = count; delim = d; }
+
+    const count =
+      first.split(d).length - 1;
+
+    if(count > best){
+
+      best = count;
+      delim = d;
+
+    }
+
   }
+
 
   function splitLine(line){
+
     const out = [];
+
     let cur = '';
     let inQuotes = false;
-    for(let i=0;i<line.length;i++){
+
+    for(
+      let i = 0;
+      i < line.length;
+      i++
+    ){
+
       const ch = line[i];
+
       if(ch === '"'){
-        if(inQuotes && line[i+1] === '"'){ cur += '"'; i++; }
-        else { inQuotes = !inQuotes; }
+
+        if(
+          inQuotes &&
+          line[i+1] === '"'
+        ){
+
+          cur += '"';
+          i++;
+
+        }else{
+
+          inQuotes =
+            !inQuotes;
+
+        }
+
         continue;
+
       }
-      if(ch === delim && !inQuotes){ out.push(cur.trim()); cur = ''; }
-      else { cur += ch; }
+
+      if(
+        ch === delim &&
+        !inQuotes
+      ){
+
+        out.push(
+          cur.trim()
+        );
+
+        cur = '';
+
+      }else{
+
+        cur += ch;
+
+      }
+
     }
-    out.push(cur.trim());
+
+    out.push(
+      cur.trim()
+    );
+
     return out;
+
   }
 
-  const header = splitLine(lines[0]).map(h => h.toLowerCase().trim());
-  const numberAliases = ['number','número','numero','nº','no','num','nr'];
-  const nameAliases = ['name','nome'];
-  const photoAliases = ['photo','foto','imagem','photo_filename','foto_ficheiro'];
-  const findIndex = aliases => aliases.map(a => header.indexOf(a)).find(i => i !== -1);
 
-  let idxNumber = findIndex(numberAliases);
-  let idxName = findIndex(nameAliases);
-  let idxPhoto = findIndex(photoAliases);
+  const header =
+    splitLine(lines[0])
+      .map(
+        h =>
+          h.toLowerCase().trim()
+      );
+
+
+  const numberAliases =
+  [
+    'number',
+    'número',
+    'numero',
+    'nº',
+    'no',
+    'num',
+    'nr'
+  ];
+
+  const nameAliases =
+  [
+    'name',
+    'nome',
+    'jogador',
+    'atleta'
+  ];
+
+  const photoAliases =
+  [
+    'photo',
+    'foto',
+    'imagem',
+    'photo_filename',
+    'foto_ficheiro'
+  ];
+
+
+  const findIndex =
+    aliases =>
+      aliases
+        .map(
+          a =>
+            header.indexOf(a)
+        )
+        .find(
+          i =>
+            i !== -1
+        );
+
+
+  let idxNumber =
+    findIndex(numberAliases);
+
+  let idxName =
+    findIndex(nameAliases);
+
+  let idxPhoto =
+    findIndex(photoAliases);
+
   let startRow = 1;
 
-  if(idxNumber === undefined || idxName === undefined){
-    idxNumber = 0; idxName = 1; idxPhoto = 2; startRow = 0;
+
+  if(
+    idxNumber === undefined ||
+    idxName === undefined
+  ){
+
+    idxNumber = 0;
+    idxName = 1;
+    idxPhoto = 2;
+    startRow = 0;
+
   }
 
+
   const rows = [];
-  for(let i=startRow;i<lines.length;i++){
-    const cols = splitLine(lines[i]);
-    const rawNumber = cols[idxNumber] ?? '';
-    const rawName = cols[idxName] ?? '';
-    const rawPhoto = cols[idxPhoto] ?? '';
-    const number = parseInt(String(rawNumber).trim(), 10);
-    const name = String(rawName).trim();
-    const photo = String(rawPhoto).trim();
-    if(!Number.isNaN(number) && name){ rows.push({ number, name, photo }); }
+
+
+  for(
+    let i = startRow;
+    i < lines.length;
+    i++
+  ){
+
+    const cols =
+      splitLine(lines[i]);
+
+    const number =
+      parseInt(
+        String(
+          cols[idxNumber] ?? ''
+        ).trim(),
+        10
+      );
+
+    const name =
+      String(
+        cols[idxName] ?? ''
+      ).trim();
+
+    const photo =
+      String(
+        cols[idxPhoto] ?? ''
+      ).trim();
+
+    if(
+      !Number.isNaN(number) &&
+      name
+    ){
+
+      rows.push({
+        number,
+        name,
+        photo
+      });
+
+    }
+
   }
+
   return rows;
+
 }
+
+
+/* ============================================================
+   XLSX
+============================================================ */
 
 function parseXLSXArrayBuffer(ab){
-  const arr = new Uint8Array(ab);
-  const wb = XLSX.read(arr, { type:'array' });
-  const ws = wb.Sheets[wb.SheetNames[0]];
-  const json = XLSX.utils.sheet_to_json(ws, { defval:'' });
+
+  const arr =
+    new Uint8Array(ab);
+
+  const wb =
+    XLSX.read(
+      arr,
+      {type:'array'}
+    );
+
+  const ws =
+    wb.Sheets[
+      wb.SheetNames[0]
+    ];
+
+  const json =
+    XLSX.utils.sheet_to_json(
+      ws,
+      {defval:''}
+    );
+
   const rows = [];
 
+
   for(const r of json){
-    const keys = Object.keys(r);
-    if(keys.length === 0) continue;
-    const lowerMap = {};
-    keys.forEach(k => lowerMap[k.toLowerCase()] = k);
 
-    const numKey = lowerMap['number'] || lowerMap['número'] || lowerMap['numero'] || lowerMap['nº'] || lowerMap['no'] || lowerMap['num'] || lowerMap['nr'] || keys[0];
-    const nameKey = lowerMap['name'] || lowerMap['nome'] || keys[1] || keys[0];
-    const photoKey = lowerMap['photo'] || lowerMap['foto'] || lowerMap['imagem'] || lowerMap['photo_filename'] || lowerMap['foto_ficheiro'];
+    const keys =
+      Object.keys(r);
 
-    const number = parseInt(String(r[numKey] ?? '').trim(), 10);
-    const name = String(r[nameKey] ?? '').trim();
-    const photo = photoKey ? String(r[photoKey] ?? '').trim() : '';
-
-    if(!Number.isNaN(number) && name){ rows.push({ number, name, photo }); }
-  }
-  return rows;
-}
-
-function getPlayerPlaySecondsByPart(playerNo, part){
-  const events = queue
-    .filter(ev => ev.player_id === playerNo && ev.part === part && (ev.event_code === 'ENT' || ev.event_code === 'SAI'))
-    .slice()
-    .sort((a,b) => new Date(a.client_timestamp) - new Date(b.client_timestamp));
-
-  let total = 0;
-  let lastEntry = null;
-  for(const ev of events){
-    const ts = new Date(ev.client_timestamp).getTime();
-    if(ev.event_code === 'ENT'){
-      if(lastEntry === null) lastEntry = ts;
-    } else if(ev.event_code === 'SAI'){
-      if(lastEntry !== null){ total += Math.max(0, Math.floor((ts - lastEntry) / 1000)); lastEntry = null; }
-    }
-  }
-  if(lastEntry !== null && session.currentPart === part && inOnField(playerNo)){
-    total += Math.max(0, Math.floor((Date.now() - lastEntry) / 1000));
-  }
-  return total;
-}
-
-function getPlayerPlaySeconds(playerNo){
-  const events = queue
-    .filter(ev => ev.player_id === playerNo && (ev.event_code === 'ENT' || ev.event_code === 'SAI'))
-    .slice()
-    .sort((a,b) => new Date(a.client_timestamp) - new Date(b.client_timestamp));
-
-  let total = 0;
-  let lastEntry = null;
-  for(const ev of events){
-    const ts = new Date(ev.client_timestamp).getTime();
-    if(ev.event_code === 'ENT'){
-      if(lastEntry === null) lastEntry = ts;
-    } else if(ev.event_code === 'SAI'){
-      if(lastEntry !== null){ total += Math.max(0, Math.floor((ts - lastEntry) / 1000)); lastEntry = null; }
-    }
-  }
-  if(lastEntry !== null && inOnField(playerNo)){
-    total += Math.max(0, Math.floor((Date.now() - lastEntry) / 1000));
-  }
-  return total;
-}
-
-function countPlayerEvent(playerNo, code){
-  return queue.filter(ev => ev.player_id === playerNo && ev.event_code === code).length;
-}
-
-function getPlayerStats(){
-  return ROSTER.map(p => ({
-    number: p.number,
-    name: p.name,
-    totalSeconds: getPlayerPlaySeconds(p.number),
-    goals: countPlayerEvent(p.number,'GOL'),
-    assists: countPlayerEvent(p.number,'ASS'),
-    rab: countPlayerEvent(p.number,'RAB'),
-    rfb: countPlayerEvent(p.number,'RFB'),
-    rec: countPlayerEvent(p.number,'REC'),
-    per: countPlayerEvent(p.number,'PER'),
-    fco: countPlayerEvent(p.number,'FCO'),
-    fso: countPlayerEvent(p.number,'FSO'),
-    def: countPlayerEvent(p.number,'DEF')
-  })).sort((a,b)=>b.totalSeconds-a.totalSeconds);
-}
-
-function updatePlayerTimes(){
-  document.querySelectorAll('.playTime').forEach(el => {
-    const player = parseInt(el.dataset.player,10);
-    el.textContent = formatSeconds(getPlayerPlaySeconds(player));
-  });
-
-  document.querySelectorAll('.onFieldPlayTime').forEach(el => {
-    const player = parseInt(el.dataset.player,10);
-    el.textContent = formatSeconds(getPlayerPlaySeconds(player));
-  });
-}
-
-function renderRoster(){
-  const el=document.getElementById('roster');
-  el.innerHTML='';
-  if(!ROSTER) ROSTER=[];
-  ROSTER.forEach(p=>{
-    const card=document.createElement('div');
-    card.className='player';
-    const src = getPhotoSrc(p);
-    const imgHtml = `<img class="photo" src="${src}" alt="${p.name}" onerror="this.style.display='none'">`;
-    const initials = `<div class="initials">${p.name.split(' ').map(n=>n[0]||'').join('').slice(0,2).toUpperCase()}</div>`;
-    const playerSeconds = getPlayerPlaySeconds(p.number);
-    card.innerHTML = `
-      <div class="visual">${imgHtml}${initials}</div>
-      <div class="name">${p.number} - ${p.name}</div>
-      <div class="small" style="margin-top:6px">Tempo em jogo: <strong class="playTime" data-player="${p.number}">${formatSeconds(playerSeconds)}</strong></div>
-      <div class="actions"><button class="btn gray addFieldBtn" data-num="${p.number}" type="button">Entrar</button></div>`;
-    el.appendChild(card);
-
-    const imgEl = card.querySelector('img.photo');
-    const initialsEl = card.querySelector('.initials');
-    if(imgEl){
-      imgEl.addEventListener('error', ()=>{ imgEl.style.display='none'; initialsEl.style.display='flex'; });
-      imgEl.addEventListener('load', ()=>{ initialsEl.style.display='none'; imgEl.style.display=''; });
-    } else { initialsEl.style.display='flex'; }
-  });
-}
-
-function posButtons(i, current){
-  const opts = ['Fixo','Ala','Pivot','GR'];
-  return `<div class="pos-picker">${opts.map(p=>`<button class="pos-btn ${current===p?'active':''}" data-idx="${i}" data-pos="${p}" type="button">${p}</button>`).join('')}</div>`;
-}
-
-function renderOnField(){
-  const root=document.getElementById('onField');
-  root.innerHTML='';
-  ensureOnFieldShape();
-
-  for(let i=0;i<5;i++){
-    const holder=document.createElement('div');
-    holder.className='slotCard';
-    const entry = onField[i];
-    if(!entry){
-      holder.innerHTML = `<div class="empty">Vazio</div>`;
-      root.appendChild(holder);
+    if(!keys.length){
       continue;
     }
 
-    const num = entry.number;
-    const pos = entry.position || '—';
-    const p=ROSTER.find(r=>r.number===num)||{number:num,name:'Unknown'};
-    const src=getPhotoSrc(p);
-    const initials=p.name.split(' ').map(s=>s[0]||'').join('').slice(0,2).toUpperCase();
-    const buttonsHtml = PRIORITY_EVENT_CODES.map(code=>{
-      if(!(code in eventMeta)) return '';
-      const meta = eventMeta[code];
-      const color = typeColors[meta.type] || '#2e86de';
-      return `<button class="event-btn" data-num="${p.number}" data-code="${code}" title="${meta.label}" style="background:${color}" type="button">${meta.sigla}</button>`;
-    }).join('');
+    const lowerMap = {};
 
-    holder.innerHTML = `
-      <div class="slotHeader" style="width:100%">
-        <span class="badge">Pos ${i+1} — ${pos}</span>
-        <button class="btn gray slotRemove" data-idx="${i}" type="button">Sair</button>
-      </div>
-      <div style="display:flex;flex-direction:column;align-items:center;margin-top:6px">
-        <img class="photo" src="${src}" alt="${p.name}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-        <div class="initials" style="display:none">${initials}</div>
-        <div class="name" style="margin-top:8px">${p.number} - ${p.name}</div>
-        <div class="small" style="margin-top:4px">Tempo total: <strong class="onFieldPlayTime" data-player="${num}">${formatSeconds(getPlayerPlaySeconds(num))}</strong></div>
-      </div>
-      ${posButtons(i, entry.position || null)}
-      <div style="margin-top:8px">${buttonsHtml}</div>`;
-    root.appendChild(holder);
+    keys.forEach(
+      k => {
+        lowerMap[
+          k.toLowerCase()
+        ] = k;
+      }
+    );
+
+    const numKey =
+      lowerMap.number ||
+      lowerMap['número'] ||
+      lowerMap.numero ||
+      lowerMap['nº'] ||
+      lowerMap.no ||
+      lowerMap.num ||
+      lowerMap.nr ||
+      keys[0];
+
+    const nameKey =
+      lowerMap.name ||
+      lowerMap.nome ||
+      lowerMap.jogador ||
+      lowerMap.atleta ||
+      keys[1] ||
+      keys[0];
+
+    const photoKey =
+      lowerMap.photo ||
+      lowerMap.foto ||
+      lowerMap.imagem ||
+      lowerMap.photo_filename ||
+      lowerMap.foto_ficheiro;
+
+
+    const number =
+      parseInt(
+        String(
+          r[numKey] ?? ''
+        ).trim(),
+        10
+      );
+
+    const name =
+      String(
+        r[nameKey] ?? ''
+      ).trim();
+
+    const photo =
+      photoKey
+        ? String(
+            r[photoKey] ?? ''
+          ).trim()
+        : '';
+
+
+    if(
+      !Number.isNaN(number) &&
+      name
+    ){
+
+      rows.push({
+        number,
+        name,
+        photo
+      });
+
+    }
+
   }
 
-  document.querySelectorAll('#onField .event-btn').forEach(btn=>{
-    btn.onclick = function(){
-      const num=parseInt(this.dataset.num,10);
-      const code=this.dataset.code;
-      if(!inOnField(num)){ alert('Só para jogadores em campo'); return; }
-      createAndQueueEvent(num, code);
-    };
-  });
+  return rows;
+
 }
+
+
+/* ============================================================
+   TEMPOS DOS JOGADORES
+============================================================ */
+
+/*
+  Cada ENT/SAI recebe game_marker.
+
+  Este valor corresponde ao tempo oficial efetivamente
+  jogado desde o início do jogo.
+
+  Logo:
+  - antes do Start = não conta;
+  - pausa = não conta;
+  - intervalo = não conta.
+*/
+
+function getEventGameMarker(ev){
+
+  if(
+    Number.isFinite(
+      Number(ev.game_marker)
+    )
+  ){
+
+    return Number(
+      ev.game_marker
+    );
+
+  }
+
+  /*
+    Compatibilidade aproximada
+    com eventos antigos.
+  */
+
+  if(
+    Number.isFinite(
+      Number(ev.clock_elapsed)
+    )
+  ){
+
+    const local =
+      Number(ev.clock_elapsed);
+
+    if(ev.part === 2){
+
+      return (
+        getElapsedForPart(1) +
+        local
+      );
+
+    }
+
+    return local;
+
+  }
+
+  const minute =
+    Number(ev.minute || 0);
+
+  if(ev.part === 2){
+
+    return (
+      getElapsedForPart(1) +
+      minute * 60
+    );
+
+  }
+
+  return minute * 60;
+
+}
+
+
+/*
+  TEMPO EM JOGO
+  = total acumulado do jogador.
+*/
+
+function getPlayerPlaySeconds(playerNo){
+
+  const events =
+    queue
+      .filter(
+        ev =>
+          ev.player_id === playerNo &&
+          (
+            ev.event_code === 'ENT' ||
+            ev.event_code === 'SAI'
+          )
+      )
+      .slice()
+      .sort(
+        (a,b) =>
+          new Date(a.client_timestamp) -
+          new Date(b.client_timestamp)
+      );
+
+
+  let total = 0;
+  let entryMarker = null;
+
+
+  for(const ev of events){
+
+    const marker =
+      getEventGameMarker(ev);
+
+
+    if(ev.event_code === 'ENT'){
+
+      if(entryMarker === null){
+
+        entryMarker =
+          marker;
+
+      }
+
+    }
+
+
+    if(ev.event_code === 'SAI'){
+
+      if(entryMarker !== null){
+
+        total +=
+          Math.max(
+            0,
+            marker - entryMarker
+          );
+
+        entryMarker =
+          null;
+
+      }
+
+    }
+
+  }
+
+
+  if(
+    entryMarker !== null &&
+    inOnField(playerNo)
+  ){
+
+    total +=
+      Math.max(
+        0,
+        getGameElapsedSeconds() -
+        entryMarker
+      );
+
+  }
+
+
+  return total;
+
+}
+
+
+/*
+  TEMPO NA QUADRA
+  = tempo desde a última entrada.
+
+  Ao sair, deixa de existir.
+  Na próxima entrada começa novamente em 00:00.
+*/
+
+function getPlayerCurrentStintSeconds(playerNo){
+
+  const events =
+    queue
+      .filter(
+        ev =>
+          ev.player_id === playerNo &&
+          (
+            ev.event_code === 'ENT' ||
+            ev.event_code === 'SAI'
+          )
+      )
+      .slice()
+      .sort(
+        (a,b) =>
+          new Date(a.client_timestamp) -
+          new Date(b.client_timestamp)
+      );
+
+
+  let entryMarker =
+    null;
+
+
+  for(const ev of events){
+
+    if(ev.event_code === 'ENT'){
+
+      entryMarker =
+        getEventGameMarker(ev);
+
+    }
+
+
+    if(ev.event_code === 'SAI'){
+
+      entryMarker =
+        null;
+
+    }
+
+  }
+
+
+  if(
+    entryMarker === null ||
+    !inOnField(playerNo)
+  ){
+
+    return 0;
+
+  }
+
+
+  return Math.max(
+    0,
+    getGameElapsedSeconds() -
+    entryMarker
+  );
+
+}
+
+
+/* ============================================================
+   ESTATÍSTICAS
+============================================================ */
+
+function countPlayerEvent(
+  playerNo,
+  code
+){
+
+  return queue.filter(
+    ev =>
+      ev.player_id === playerNo &&
+      ev.event_code === code
+  ).length;
+
+}
+
+
+function getPlayerStats(){
+
+  return ROSTER
+    .map(
+      p => ({
+
+        number:p.number,
+
+        name:p.name,
+
+        totalSeconds:
+          getPlayerPlaySeconds(
+            p.number
+          ),
+
+        goals:
+          countPlayerEvent(
+            p.number,
+            'GOL'
+          ),
+
+        assists:
+          countPlayerEvent(
+            p.number,
+            'ASS'
+          ),
+
+        rab:
+          countPlayerEvent(
+            p.number,
+            'RAB'
+          ),
+
+        rfb:
+          countPlayerEvent(
+            p.number,
+            'RFB'
+          ),
+
+        rec:
+          countPlayerEvent(
+            p.number,
+            'REC'
+          ),
+
+        per:
+          countPlayerEvent(
+            p.number,
+            'PER'
+          ),
+
+        fco:
+          countPlayerEvent(
+            p.number,
+            'FCO'
+          ),
+
+        fso:
+          countPlayerEvent(
+            p.number,
+            'FSO'
+          ),
+
+        def:
+          countPlayerEvent(
+            p.number,
+            'DEF'
+          )
+
+      })
+    )
+
+    .sort(
+      (a,b) =>
+        b.totalSeconds -
+        a.totalSeconds
+    );
+
+}
+
+
+/* ============================================================
+   TEMPOS VISUAIS
+============================================================ */
+
+function updatePlayerTimes(){
+
+
+  document
+    .querySelectorAll('.playTime')
+    .forEach(
+      el => {
+
+        const player =
+          parseInt(
+            el.dataset.player,
+            10
+          );
+
+        el.textContent =
+          formatSeconds(
+            getPlayerPlaySeconds(
+              player
+            )
+          );
+
+      }
+    );
+
+
+  document
+    .querySelectorAll('.onFieldTotalTime')
+    .forEach(
+      el => {
+
+        const player =
+          parseInt(
+            el.dataset.player,
+            10
+          );
+
+        el.textContent =
+          formatSeconds(
+            getPlayerPlaySeconds(
+              player
+            )
+          );
+
+      }
+    );
+
+
+  document
+    .querySelectorAll('.onFieldPartialTime')
+    .forEach(
+      el => {
+
+        const player =
+          parseInt(
+            el.dataset.player,
+            10
+          );
+
+        el.textContent =
+          formatSeconds(
+            getPlayerCurrentStintSeconds(
+              player
+            )
+          );
+
+      }
+    );
+
+}
+
+
+/* ============================================================
+   ROSTER
+============================================================ */
+
+function renderRoster(){
+
+  const el =
+    document.getElementById(
+      'roster'
+    );
+
+  el.innerHTML = '';
+
+
+  ROSTER.forEach(
+    p => {
+
+      const card =
+        document.createElement(
+          'div'
+        );
+
+      card.className =
+        'player';
+
+
+      const src =
+        getPhotoSrc(p);
+
+
+      const initials =
+        p.name
+          .split(' ')
+          .map(
+            n =>
+              n[0] || ''
+          )
+          .join('')
+          .slice(0,2)
+          .toUpperCase();
+
+
+      card.innerHTML = `
+
+        <div class="visual">
+
+          <img class="photo"
+               src="${src}"
+               alt="${p.name}"
+               onerror="this.style.display='none'">
+
+          <div class="initials">
+            ${initials}
+          </div>
+
+        </div>
+
+        <div class="name">
+          ${p.number} - ${p.name}
+        </div>
+
+        <div class="small"
+             style="margin-top:6px">
+
+          Tempo em jogo:
+
+          <strong class="playTime"
+                  data-player="${p.number}">
+
+            ${formatSeconds(
+              getPlayerPlaySeconds(
+                p.number
+              )
+            )}
+
+          </strong>
+
+        </div>
+
+        <div class="actions">
+
+          <button class="btn gray addFieldBtn"
+                  data-num="${p.number}"
+                  type="button">
+            Entrar
+          </button>
+
+        </div>
+
+      `;
+
+
+      el.appendChild(
+        card
+      );
+
+
+      const imgEl =
+        card.querySelector(
+          'img.photo'
+        );
+
+      const initialsEl =
+        card.querySelector(
+          '.initials'
+        );
+
+
+      if(imgEl){
+
+        imgEl.addEventListener(
+          'error',
+          () => {
+
+            imgEl.style.display =
+              'none';
+
+            initialsEl.style.display =
+              'flex';
+
+          }
+        );
+
+
+        imgEl.addEventListener(
+          'load',
+          () => {
+
+            initialsEl.style.display =
+              'none';
+
+            imgEl.style.display =
+              '';
+
+          }
+        );
+
+      }
+
+    }
+  );
+
+}
+
+
+/* ============================================================
+   POSIÇÕES
+============================================================ */
+
+function posButtons(i,current){
+
+  const opts =
+    [
+      'Fixo',
+      'Ala',
+      'Pivot',
+      'GR'
+    ];
+
+  return `
+
+    <div class="pos-picker">
+
+      ${opts.map(
+        p => `
+
+          <button class="pos-btn ${current === p ? 'active' : ''}"
+                  data-idx="${i}"
+                  data-pos="${p}"
+                  type="button">
+            ${p}
+          </button>
+
+        `
+      ).join('')}
+
+    </div>
+
+  `;
+
+}
+
+
+/* ============================================================
+   CAMPO
+============================================================ */
+
+function renderOnField(){
+
+  const root =
+    document.getElementById(
+      'onField'
+    );
+
+  root.innerHTML = '';
+
+  ensureOnFieldShape();
+
+
+  for(
+    let i = 0;
+    i < 5;
+    i++
+  ){
+
+    const holder =
+      document.createElement(
+        'div'
+      );
+
+    holder.className =
+      'slotCard';
+
+
+    const entry =
+      onField[i];
+
+
+    if(!entry){
+
+      holder.innerHTML =
+        `<div class="empty">Vazio</div>`;
+
+      root.appendChild(
+        holder
+      );
+
+      continue;
+
+    }
+
+
+    const num =
+      entry.number;
+
+    const pos =
+      entry.position || '—';
+
+
+    const p =
+      ROSTER.find(
+        r =>
+          r.number === num
+      ) || {
+        number:num,
+        name:'Unknown'
+      };
+
+
+    const src =
+      getPhotoSrc(p);
+
+
+    const initials =
+      p.name
+        .split(' ')
+        .map(
+          s =>
+            s[0] || ''
+        )
+        .join('')
+        .slice(0,2)
+        .toUpperCase();
+
+
+    const buttonsHtml =
+      PRIORITY_EVENT_CODES
+        .map(
+          code => {
+
+            const meta =
+              eventMeta[code];
+
+            const color =
+              typeColors[
+                meta.type
+              ];
+
+            return `
+
+              <button class="event-btn"
+                      data-num="${p.number}"
+                      data-code="${code}"
+                      title="${meta.label}"
+                      style="background:${color}"
+                      type="button">
+                ${meta.sigla}
+              </button>
+
+            `;
+
+          }
+        )
+        .join('');
+
+
+    holder.innerHTML = `
+
+      <div class="slotHeader">
+
+        <span class="badge">
+          Pos ${i+1} — ${pos}
+        </span>
+
+        <button class="btn gray slotRemove"
+                data-idx="${i}"
+                type="button">
+          Sair
+        </button>
+
+      </div>
+
+
+      <div style="
+        display:flex;
+        flex-direction:column;
+        align-items:center;
+        margin-top:6px">
+
+        <img class="photo"
+             src="${src}"
+             alt="${p.name}"
+             onerror="
+               this.style.display='none';
+               this.nextElementSibling.style.display='flex'
+             ">
+
+        <div class="initials"
+             style="display:none">
+          ${initials}
+        </div>
+
+        <div class="name"
+             style="margin-top:8px">
+          ${p.number} - ${p.name}
+        </div>
+
+
+        <div class="small"
+             style="margin-top:7px">
+
+          Tempo em jogo:
+
+          <strong class="onFieldTotalTime"
+                  data-player="${num}">
+
+            ${formatSeconds(
+              getPlayerPlaySeconds(
+                num
+              )
+            )}
+
+          </strong>
+
+        </div>
+
+
+        <div class="small"
+             style="margin-top:3px">
+
+          Tempo na quadra:
+
+          <strong class="onFieldPartialTime"
+                  data-player="${num}">
+
+            ${formatSeconds(
+              getPlayerCurrentStintSeconds(
+                num
+              )
+            )}
+
+          </strong>
+
+        </div>
+
+      </div>
+
+      ${posButtons(
+        i,
+        entry.position || null
+      )}
+
+      <div style="margin-top:8px">
+        ${buttonsHtml}
+      </div>
+
+    `;
+
+
+    root.appendChild(
+      holder
+    );
+
+  }
+
+
+  document
+    .querySelectorAll(
+      '#onField .event-btn'
+    )
+    .forEach(
+      btn => {
+
+        btn.onclick =
+          function(){
+
+            const num =
+              parseInt(
+                this.dataset.num,
+                10
+              );
+
+            const code =
+              this.dataset.code;
+
+            if(!inOnField(num)){
+
+              alert(
+                'Só para jogadores em campo'
+              );
+
+              return;
+
+            }
+
+            createAndQueueEvent(
+              num,
+              code
+            );
+
+          };
+
+      }
+    );
+
+}
+
+
+/* ============================================================
+   CRIAÇÃO DE EVENTOS
+============================================================ */
+
+function makeEvent(
+  player_no,
+  code,
+  note,
+  rating,
+  rating_label
+){
+
+  const part =
+    session.currentPart || 1;
+
+  const meta =
+    eventMeta[code] || {};
+
+
+  return {
+
+    event_id:
+      'evt_' +
+      Math.random()
+        .toString(36)
+        .slice(2,9),
+
+    session_id:
+      session.session_id ||
+      document.getElementById(
+        'session_id'
+      ).value ||
+      's_offline',
+
+    part,
+
+    client_timestamp:
+      nowISO(),
+
+    minute:
+      computeMinute(),
+
+    /*
+      interno:
+      necessário para os dois tempos.
+      Não é exportado para CSV.
+    */
+
+    game_marker:
+      getGameElapsedSeconds(),
+
+    player_id:
+      player_no,
+
+    event_code:
+      code,
+
+    event_label:
+      meta.label || code,
+
+    event_sigla:
+      meta.sigla || code,
+
+    note:
+      note || '',
+
+    rating:
+      rating ?? '',
+
+    rating_label:
+      rating_label || ''
+
+  };
+
+}
+
+
+function createAndQueueEvent(
+  player_no,
+  code,
+  note
+){
+
+  queue.push(
+    makeEvent(
+      player_no,
+      code,
+      note
+    )
+  );
+
+  saveAll();
+
+}
+
 
 function createTeamEvent(code){
-  const ts = nowISO();
-  const minute = computeMinute(ts);
-  const meta = eventMeta[code] || {};
-  const ev = {
-    event_id:'evt_'+Math.random().toString(36).slice(2,9),
-    session_id: session.session_id || document.getElementById('session_id').value || 's_offline',
-    part: session.currentPart || 1,
-    client_timestamp: ts,
-    minute,
-    clock_elapsed: getElapsedDisplayForPart(session.currentPart || 1),
-    player_id: null,
-    event_code: code,
-    event_label: meta.label || code,
-    event_sigla: meta.sigla || code,
-    note: '',
-    rating: '',
-    rating_label: ''
-  };
-  queue.push(ev);
+
+  queue.push(
+    makeEvent(
+      null,
+      code
+    )
+  );
+
   saveAll();
+
 }
 
-function createAndQueueEvent(player_no, code, note){
-  const ts = nowISO();
-  const minute = computeMinute(ts);
-  const meta = eventMeta[code] || {};
-  const ev = {
-    event_id:'evt_'+Math.random().toString(36).slice(2,9),
-    session_id: session.session_id || document.getElementById('session_id').value || 's_offline',
-    part: session.currentPart || 1,
-    client_timestamp: ts,
-    minute,
-    clock_elapsed: getElapsedDisplayForPart(session.currentPart || 1),
-    player_id: player_no,
-    event_code: code,
-    event_label: meta.label || code,
-    event_sigla: meta.sigla || code,
-    note: note || '',
-    rating: '',
-    rating_label: ''
-  };
-  queue.push(ev);
-  saveAll();
-}
+
+/* ============================================================
+   LOG
+============================================================ */
 
 function renderQueue(){
-  const tbody=document.querySelector('#eventsTable tbody');
-  if(!tbody) return;
-  tbody.innerHTML='';
-  queue.forEach((ev,i)=>{
-    const p = ev.player_id == null ? null : ROSTER.find(x=>x.number===ev.player_id);
-    const playerLabel = ev.player_id == null ? '(equipa)' : `${ev.player_id} - ${p? p.name: ''}`;
-    const tr=document.createElement('tr');
-    tr.innerHTML = `<td>${i+1}</td><td>${ev.minute}</td><td>${ev.part}</td><td>${formatMMSS(ev.clock_elapsed ?? 0)}</td><td>${playerLabel}</td><td>${ev.event_label}</td><td>${ev.event_sigla}</td><td>${ev.rating_label || ''}</td><td>${ev.note || ''}</td><td>${ev.client_timestamp}</td>`;
-    tbody.appendChild(tr);
-  });
-  const cnt=document.getElementById('queueCount');
-  if(cnt) cnt.innerText = queue.length;
+
+  const tbody =
+    document.querySelector(
+      '#eventsTable tbody'
+    );
+
+  tbody.innerHTML = '';
+
+
+  queue.forEach(
+    (ev,i) => {
+
+      const p =
+        ev.player_id == null
+          ? null
+          : ROSTER.find(
+              x =>
+                x.number ===
+                ev.player_id
+            );
+
+
+      const playerLabel =
+        ev.player_id == null
+          ? '(equipa)'
+          : `${ev.player_id} - ${p ? p.name : ''}`;
+
+
+      const tr =
+        document.createElement(
+          'tr'
+        );
+
+
+      tr.innerHTML = `
+
+        <td>${i+1}</td>
+        <td>${ev.minute}</td>
+        <td>${ev.part}</td>
+        <td>${playerLabel}</td>
+        <td>${ev.event_label}</td>
+        <td>${ev.event_sigla}</td>
+        <td>${ev.rating_label || ''}</td>
+        <td>${ev.note || ''}</td>
+        <td>${ev.client_timestamp}</td>
+
+      `;
+
+
+      tbody.appendChild(
+        tr
+      );
+
+    }
+  );
+
+
+  document.getElementById(
+    'queueCount'
+  ).innerText =
+    queue.length;
+
 }
+
+
+/* ============================================================
+   LIVE
+============================================================ */
 
 function renderLiveInfo(){
-  const currentPart = session.currentPart || null;
-  const partText = currentPart ? `${currentPart}ª Parte` : '—';
-  const elapsedText = currentPart ? formatMMSS(getElapsedForPart(currentPart)) : '00:00';
-  const score = getScore();
-  const scoreText = `${score.marcados} - ${score.sofridos}`;
 
-  document.getElementById('livePart').textContent = partText;
-  document.getElementById('liveElapsedPart').textContent = elapsedText;
-  document.getElementById('liveScore').textContent = scoreText;
+  const currentPart =
+    session.currentPart || null;
 
-  const stickyPart = document.getElementById('stickyPart');
-  const stickyElapsed = document.getElementById('stickyElapsed');
-  const stickyScore = document.getElementById('stickyScore');
-  if(stickyPart) stickyPart.textContent = partText;
-  if(stickyElapsed) stickyElapsed.textContent = elapsedText;
-  if(stickyScore) stickyScore.textContent = scoreText;
+
+  const partText =
+    currentPart
+      ? `${currentPart}ª Parte`
+      : '—';
+
+
+  const elapsedText =
+    currentPart
+      ? formatMMSS(
+          getElapsedForPart(
+            currentPart
+          )
+        )
+      : '00:00';
+
+
+  const score =
+    getScore();
+
+
+  const scoreText =
+    `${score.marcados} - ${score.sofridos}`;
+
+
+  document.getElementById(
+    'livePart'
+  ).textContent =
+    partText;
+
+
+  document.getElementById(
+    'liveElapsedPart'
+  ).textContent =
+    elapsedText;
+
+
+  document.getElementById(
+    'liveScore'
+  ).textContent =
+    scoreText;
+
+
+  document.getElementById(
+    'stickyPart'
+  ).textContent =
+    partText;
+
+
+  document.getElementById(
+    'stickyElapsed'
+  ).textContent =
+    elapsedText;
+
+
+  document.getElementById(
+    'stickyScore'
+  ).textContent =
+    scoreText;
+
 }
+
+
+/* ============================================================
+   TABELA
+============================================================ */
 
 function renderPlayerStatsTable(){
-  const tbody = document.querySelector('#playerStatsTable tbody');
-  if(!tbody) return;
+
+  const tbody =
+    document.querySelector(
+      '#playerStatsTable tbody'
+    );
+
   tbody.innerHTML = '';
-  const stats = getPlayerStats();
-  stats.forEach(s => {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${s.number}</td><td>${s.name}</td><td>${formatSeconds(s.totalSeconds)}</td><td>${s.goals}</td><td>${s.assists}</td><td>${s.rab}</td><td>${s.rfb}</td><td>${s.rec}</td><td>${s.per}</td><td>${s.fco}</td><td>${s.fso}</td><td>${s.def}</td>`;
-    tbody.appendChild(tr);
-  });
+
+
+  getPlayerStats()
+    .forEach(
+      s => {
+
+        const tr =
+          document.createElement(
+            'tr'
+          );
+
+        tr.innerHTML = `
+
+          <td>${s.number}</td>
+          <td>${s.name}</td>
+
+          <td>
+            ${formatSeconds(
+              s.totalSeconds
+            )}
+          </td>
+
+          <td>${s.goals}</td>
+          <td>${s.assists}</td>
+          <td>${s.rab}</td>
+          <td>${s.rfb}</td>
+          <td>${s.rec}</td>
+          <td>${s.per}</td>
+          <td>${s.fco}</td>
+          <td>${s.fso}</td>
+          <td>${s.def}</td>
+
+        `;
+
+        tbody.appendChild(
+          tr
+        );
+
+      }
+    );
+
 }
+
+
+/* ============================================================
+   SUMMARY
+============================================================ */
 
 function renderSummaryCards(){
-  const stats = getPlayerStats();
-  const totals = {
-    goalsFor: getScore().marcados,
-    goalsAgainst: getScore().sofridos,
-    shotsOn: stats.reduce((a,b)=>a+b.rab,0),
-    shotsOff: stats.reduce((a,b)=>a+b.rfb,0),
-    recoveries: stats.reduce((a,b)=>a+b.rec,0),
-    losses: stats.reduce((a,b)=>a+b.per,0)
-  };
-  document.getElementById('sumGoalsFor').textContent = totals.goalsFor;
-  document.getElementById('sumGoalsAgainst').textContent = totals.goalsAgainst;
-  document.getElementById('sumShotsOn').textContent = totals.shotsOn;
-  document.getElementById('sumShotsOff').textContent = totals.shotsOff;
-  document.getElementById('sumRecoveries').textContent = totals.recoveries;
-  document.getElementById('sumLosses').textContent = totals.losses;
+
+  const stats =
+    getPlayerStats();
+
+  const score =
+    getScore();
+
+
+  document.getElementById(
+    'sumGoalsFor'
+  ).textContent =
+    score.marcados;
+
+
+  document.getElementById(
+    'sumGoalsAgainst'
+  ).textContent =
+    score.sofridos;
+
+
+  document.getElementById(
+    'sumShotsOn'
+  ).textContent =
+    stats.reduce(
+      (a,b) =>
+        a + b.rab,
+      0
+    );
+
+
+  document.getElementById(
+    'sumShotsOff'
+  ).textContent =
+    stats.reduce(
+      (a,b) =>
+        a + b.rfb,
+      0
+    );
+
+
+  document.getElementById(
+    'sumRecoveries'
+  ).textContent =
+    stats.reduce(
+      (a,b) =>
+        a + b.rec,
+      0
+    );
+
+
+  document.getElementById(
+    'sumLosses'
+  ).textContent =
+    stats.reduce(
+      (a,b) =>
+        a + b.per,
+      0
+    );
+
 }
 
-function destroyChart(name){ if(charts[name]){ charts[name].destroy(); charts[name] = null; } }
+
+/* ============================================================
+   CHARTS
+============================================================ */
+
+function destroyChart(name){
+
+  if(charts[name]){
+
+    charts[name].destroy();
+    charts[name] = null;
+
+  }
+
+}
+
 
 function renderCharts(){
-  const stats = getPlayerStats();
+
+  const stats =
+    getPlayerStats();
+
+
   destroyChart('minutes');
   destroyChart('actions');
   destroyChart('intensity');
 
-  charts.minutes = new Chart(document.getElementById('chartPlayerMinutes'), {
-    type: 'bar',
-    data: {
-      labels: stats.map(s=>`${s.number} ${s.name}`),
-      datasets: [{ label:'Minutos jogados', data: stats.map(s=>+(s.totalSeconds/60).toFixed(1)) }]
-    },
-    options: {
-      responsive:true,
-      maintainAspectRatio:false,
-      plugins:{
-        legend:{ display:false },
-        title:{ display:true, text:'Tempo de jogo por jogador'}
-      },
-      scales:{ y:{ beginAtZero:true } }
-    }
-  });
 
-  charts.actions = new Chart(document.getElementById('chartActions'), {
-    type: 'bar',
-    data: {
-      labels: ['Golos marcados','Remates à baliza','Remates fora','Recuperações de bola','Perdas de bola','Assistências','Faltas cometidas','Faltas sofridas','Defesas do GR'],
-      datasets: [{ label:'Totais do jogo', data: [
-        queue.filter(e=>e.event_code==='GOL').length,
-        queue.filter(e=>e.event_code==='RAB').length,
-        queue.filter(e=>e.event_code==='RFB').length,
-        queue.filter(e=>e.event_code==='REC').length,
-        queue.filter(e=>e.event_code==='PER').length,
-        queue.filter(e=>e.event_code==='ASS').length,
-        queue.filter(e=>e.event_code==='FCO').length,
-        queue.filter(e=>e.event_code==='FSO').length,
-        queue.filter(e=>e.event_code==='DEF').length
-      ] }]
-    },
-    options: {
-      responsive:true,
-      maintainAspectRatio:false,
-      plugins:{
-        legend:{ display:false },
-        title:{ display:true, text:'Principais estatísticas do jogo'}
-      },
-      scales:{ y:{ beginAtZero:true } }
-    }
-  });
+  charts.minutes =
+    new Chart(
+      document.getElementById(
+        'chartPlayerMinutes'
+      ),
+      {
 
-  const maxMinute = Math.max(1, ...queue.map(ev => Number(ev.minute || 0)));
-  const minuteBuckets = Array.from({length: maxMinute + 1}, (_,i) => i);
+        type:'bar',
 
-  const offensiveCodes = new Set(['RAB','RFB','GOL']);
-  const defensiveCodes = new Set(['REC','DEF']);
+        data:{
 
-  const offCounts = minuteBuckets.map(min =>
-    queue.filter(ev => offensiveCodes.has(ev.event_code) && Number(ev.minute || 0) === min).length
-  );
+          labels:
+            stats.map(
+              s =>
+                `${s.number} ${s.name}`
+            ),
 
-  const defCounts = minuteBuckets.map(min =>
-    queue.filter(ev => defensiveCodes.has(ev.event_code) && Number(ev.minute || 0) === min).length
-  );
+          datasets:[
+            {
 
-  charts.intensity = new Chart(document.getElementById('chartIntensity'), {
-    type: 'line',
-    data: {
-      labels: minuteBuckets.map(m => `${m}'`),
-      datasets: [
-        {
-          label:'Ofensiva',
-          data: offCounts,
-          tension:0.25,
-          fill:false
+              label:
+                'Minutos jogados',
+
+              data:
+                stats.map(
+                  s =>
+                    +(
+                      s.totalSeconds /
+                      60
+                    ).toFixed(1)
+                )
+
+            }
+          ]
+
         },
-        {
-          label:'Defensiva',
-          data: defCounts,
-          tension:0.25,
-          fill:false
+
+        options:{
+
+          responsive:true,
+          maintainAspectRatio:false,
+
+          plugins:{
+
+            legend:{
+              display:false
+            },
+
+            title:{
+              display:true,
+              text:'Tempo em jogo por jogador'
+            }
+
+          },
+
+          scales:{
+
+            y:{
+              beginAtZero:true
+            }
+
+          }
+
         }
-      ]
-    },
-    options: {
-      responsive:true,
-      maintainAspectRatio:false,
-      plugins:{
-        legend:{ display:true },
-        title:{ display:true, text:'Intensidade Ofensiva (RAB, RFB, GOL) vs Intensidade Defensiva (REC, DEF)' }
-      },
-      scales:{ y:{ beginAtZero:true } }
+
+      }
+    );
+
+
+  charts.actions =
+    new Chart(
+      document.getElementById(
+        'chartActions'
+      ),
+      {
+
+        type:'bar',
+
+        data:{
+
+          labels:[
+            'Golos',
+            'Remates AB',
+            'Remates F',
+            'Recuperações',
+            'Perdas',
+            'Assist.',
+            'F.Cometidas',
+            'F.Sofridas',
+            'Defesas GR'
+          ],
+
+          datasets:[
+            {
+
+              label:
+                'Totais do jogo',
+
+              data:[
+
+                queue.filter(
+                  e =>
+                    e.event_code ===
+                    'GOL'
+                ).length,
+
+                queue.filter(
+                  e =>
+                    e.event_code ===
+                    'RAB'
+                ).length,
+
+                queue.filter(
+                  e =>
+                    e.event_code ===
+                    'RFB'
+                ).length,
+
+                queue.filter(
+                  e =>
+                    e.event_code ===
+                    'REC'
+                ).length,
+
+                queue.filter(
+                  e =>
+                    e.event_code ===
+                    'PER'
+                ).length,
+
+                queue.filter(
+                  e =>
+                    e.event_code ===
+                    'ASS'
+                ).length,
+
+                queue.filter(
+                  e =>
+                    e.event_code ===
+                    'FCO'
+                ).length,
+
+                queue.filter(
+                  e =>
+                    e.event_code ===
+                    'FSO'
+                ).length,
+
+                queue.filter(
+                  e =>
+                    e.event_code ===
+                    'DEF'
+                ).length
+
+              ]
+
+            }
+          ]
+
+        },
+
+        options:{
+
+          responsive:true,
+          maintainAspectRatio:false,
+
+          plugins:{
+
+            legend:{
+              display:false
+            },
+
+            title:{
+              display:true,
+              text:'Principais estatísticas do jogo'
+            }
+
+          },
+
+          scales:{
+
+            y:{
+              beginAtZero:true
+            }
+
+          }
+
+        }
+
+      }
+    );
+
+
+  /*
+    Como solicitado:
+    GOS incluído na intensidade ofensiva.
+  */
+
+  const offensiveCodes =
+    new Set([
+      'RAB',
+      'RFB',
+      'GOL',
+      'GOS'
+    ]);
+
+
+  const defensiveCodes =
+    new Set([
+      'REC',
+      'DEF'
+    ]);
+
+
+  function getAbsoluteMinute(ev){
+
+    const m =
+      Number(
+        ev.minute || 0
+      );
+
+    return (
+      ev.part === 2
+        ? m + 20
+        : m
+    );
+
+  }
+
+
+  const currentAbsoluteMinute =
+    session.currentPart === 2
+
+      ? 20 +
+        Math.floor(
+          getElapsedForPart(2) /
+          60
+        )
+
+      : Math.floor(
+          getElapsedForPart(1) /
+          60
+        );
+
+
+  const maxEventMinute =
+    queue.length
+
+      ? Math.max(
+          ...queue.map(
+            getAbsoluteMinute
+          )
+        )
+
+      : 0;
+
+
+  const maxMinute =
+    Math.max(
+      currentAbsoluteMinute,
+      maxEventMinute,
+      1
+    );
+
+
+  const offMap = {};
+  const defMap = {};
+
+
+  queue.forEach(
+    ev => {
+
+      const absMin =
+        getAbsoluteMinute(ev);
+
+
+      if(
+        offensiveCodes.has(
+          ev.event_code
+        )
+      ){
+
+        offMap[absMin] =
+          (offMap[absMin] || 0)
+          + 1;
+
+      }
+
+
+      if(
+        defensiveCodes.has(
+          ev.event_code
+        )
+      ){
+
+        defMap[absMin] =
+          (defMap[absMin] || 0)
+          + 1;
+
+      }
+
     }
-  });
+  );
+
+
+  const labels = [];
+  const offCounts = [];
+  const defCounts = [];
+
+
+  for(
+    let m = 0;
+    m <= maxMinute;
+    m++
+  ){
+
+    labels.push(
+      `${m}'`
+    );
+
+    offCounts.push(
+      offMap[m] || 0
+    );
+
+    defCounts.push(
+      defMap[m] || 0
+    );
+
+  }
+
+
+  charts.intensity =
+    new Chart(
+      document.getElementById(
+        'chartIntensity'
+      ),
+      {
+
+        type:'line',
+
+        data:{
+
+          labels,
+
+          datasets:[
+
+            {
+              label:'Ofensiva',
+              data:offCounts,
+              tension:.25,
+              fill:false
+            },
+
+            {
+              label:'Defensiva',
+              data:defCounts,
+              tension:.25,
+              fill:false
+            }
+
+          ]
+
+        },
+
+        options:{
+
+          responsive:true,
+          maintainAspectRatio:false,
+
+          plugins:{
+
+            legend:{
+              display:true
+            },
+
+            title:{
+              display:true,
+              text:'Intensidade Ofensiva (RAB, RFB, GOL, GOS) vs Intensidade Defensiva (REC, DEF)'
+            }
+
+          },
+
+          scales:{
+
+            y:{
+              beginAtZero:true,
+              ticks:{
+                precision:0
+              }
+            }
+
+          }
+
+        }
+
+      }
+    );
+
 }
 
-function renderFinalSummary(){
-  renderSummaryCards();
-  renderPlayerStatsTable();
-  renderCharts();
+
+function maybeRefreshIntensityChart(){
+
+  const currentMinute =
+    session.currentPart === 2
+
+      ? 20 +
+        Math.floor(
+          getElapsedForPart(2) /
+          60
+        )
+
+      : Math.floor(
+          getElapsedForPart(1) /
+          60
+        );
+
+
+  if(
+    currentMinute !==
+      lastIntensityMinuteRendered
+
+    ||
+
+    queue.length !==
+      lastQueueSizeRendered
+  ){
+
+    renderCharts();
+
+    lastIntensityMinuteRendered =
+      currentMinute;
+
+    lastQueueSizeRendered =
+      queue.length;
+
+  }
+
 }
+
+
+/* ============================================================
+   RENDER
+============================================================ */
 
 function renderAll(){
+
   renderRoster();
   renderOnField();
   renderQueue();
   populateManualPlayerList();
   populateManualCodeList();
   renderLiveInfo();
-  renderFinalSummary();
+  renderSummaryCards();
+  renderPlayerStatsTable();
+  renderCharts();
+
+  lastQueueSizeRendered =
+    queue.length;
+
 }
+
+
+/* ============================================================
+   RELÓGIO
+============================================================ */
 
 function startPart(part){
+
   defaultSessionState();
 
-  session.clockRunning = false;
-  session.currentPart = part;
+
+  if(session.clockRunning){
+
+    commitRunningClock();
+
+  }
+
+
+  session.currentPart =
+    part;
+
 
   if(part === 1){
-    session.part1_start = nowISO();
-    session.part1_elapsed_offset = 0;
-    session.part1_running_since = nowISO();
-  } else {
-    session.part2_start = nowISO();
-    session.part2_elapsed_offset = 0;
-    session.part2_running_since = nowISO();
+
+    session.part1_start =
+      nowISO();
+
+    session.part1_elapsed_offset =
+      0;
+
+    session.part1_running_since =
+      nowISO();
+
+  }else{
+
+    session.part2_start =
+      nowISO();
+
+    session.part2_elapsed_offset =
+      0;
+
+    session.part2_running_since =
+      nowISO();
+
   }
 
-  session.clockRunning = true;
+
+  session.clockRunning =
+    true;
+
+
   saveAll();
+
 }
+
 
 function pauseCurrentClock(){
+
   defaultSessionState();
-  if(!session.clockRunning || !session.currentPart) return;
-  const part = session.currentPart;
-  const runningSince = part === 1 ? session.part1_running_since : session.part2_running_since;
-  if(runningSince){
-    const add = Math.floor((Date.now() - new Date(runningSince).getTime()) / 1000);
-    if(part === 1){
-      session.part1_elapsed_offset = (session.part1_elapsed_offset || 0) + add;
-      session.part1_running_since = null;
-    } else {
-      session.part2_elapsed_offset = (session.part2_elapsed_offset || 0) + add;
-      session.part2_running_since = null;
-    }
+
+
+  if(
+    !session.clockRunning ||
+    !session.currentPart
+  ){
+    return;
   }
-  session.clockRunning = false;
+
+
+  /*
+    Consolida o relógio oficial.
+    Como os tempos dos atletas usam esse relógio,
+    todos param no mesmo instante.
+  */
+
+  commitRunningClock();
+
   saveAll();
+
 }
+
 
 function resumeCurrentClock(){
-  defaultSessionState();
-  if(!session.currentPart) return;
-  if(session.clockRunning) return;
-  session.clockRunning = true;
-  if(session.currentPart === 1) session.part1_running_since = nowISO();
-  if(session.currentPart === 2) session.part2_running_since = nowISO();
-  saveAll();
-}
 
-function resetCurrentClock(){
   defaultSessionState();
 
-  if(!session.currentPart){
-    alert('Primeiro seleciona/inicia uma parte.');
+
+  if(
+    !session.currentPart ||
+    session.clockRunning
+  ){
     return;
   }
 
-  if(hasEventsInPart(session.currentPart)){
-    alert('O reset do relógio só pode ser feito antes de registar eventos nesta parte.');
-    return;
-  }
 
-  session.clockRunning = false;
+  session.clockRunning =
+    true;
+
 
   if(session.currentPart === 1){
-    session.part1_elapsed_offset = 0;
-    session.part1_running_since = null;
-    session.part1_start = null;
-  } else {
-    session.part2_elapsed_offset = 0;
-    session.part2_running_since = null;
-    session.part2_start = null;
+
+    session.part1_running_since =
+      nowISO();
+
   }
+
+
+  if(session.currentPart === 2){
+
+    session.part2_running_since =
+      nowISO();
+
+  }
+
 
   saveAll();
+
 }
 
-function populateManualPlayerList(){
-  const sel=document.getElementById('manualPlayer');
-  if(!sel) return;
-  const cur = sel.value;
-  sel.innerHTML = '<option value="">(Equipa)</option>';
-  ROSTER.forEach(p=>{
-    const opt=document.createElement('option');
-    opt.value = p.number;
-    opt.textContent = p.number + ' - ' + p.name;
-    sel.appendChild(opt);
-  });
-  sel.value = cur || '';
-}
 
-function populateManualCodeList(){
-  const sel=document.getElementById('manualCode');
-  if(!sel) return;
-  sel.innerHTML = '';
-  const codes = Object.keys(eventMeta).filter(c => c.startsWith('AS_'));
-  codes.forEach(c => {
-    const opt = document.createElement('option');
-    opt.value = c;
-    opt.textContent = eventMeta[c].label;
-    sel.appendChild(opt);
-  });
-  if(codes.length) sel.value = 'AS_OUT';
-}
-
-document.addEventListener('click', (e)=>{
-  const addBtn = e.target.closest('.addFieldBtn');
-  if(addBtn){
-    const num = parseInt(addBtn.dataset.num,10);
-    if(inOnField(num)){ alert('Já em campo'); return; }
-    const filled = onField.filter(Boolean).length;
-    if(filled >= 5){ alert('Campo já tem 5'); return; }
-    const empty = onField.indexOf(null);
-    const entry = { number:num, position: null };
-    if(empty === -1) onField.push(entry); else onField[empty] = entry;
-    createAndQueueEvent(num,'ENT');
-    return;
-  }
-
-  const posBtn = e.target.closest('.pos-btn');
-  if(posBtn){
-    const idx = parseInt(posBtn.dataset.idx,10);
-    const newPos = posBtn.dataset.pos;
-    if(onField[idx]){
-      onField[idx].position = newPos;
-      const num = onField[idx].number;
-      const codeMap = { 'Fixo':'P_FIXO', 'Ala':'P_ALA', 'Pivot':'P_PIVOT', 'GR':'P_GR' };
-      createAndQueueEvent(num, codeMap[newPos]);
-    }
-    return;
-  }
-
-  const rm = e.target.closest('.slotRemove');
-  if(rm){
-    const idx = parseInt(rm.dataset.idx,10);
-    const entry = onField[idx];
-    const num = entry ? entry.number : null;
-    if(num!=null){ createAndQueueEvent(num,'SAI'); }
-    onField[idx] = null;
-    saveAll();
-    return;
-  }
-
-  if(e.target && e.target.id === 'clearSlots'){
-    if(confirm('Remover todos os 5 do campo?')){
-      onField.forEach(entry => { if(entry && entry.number != null){ createAndQueueEvent(entry.number, 'SAI'); } });
-      onField=[null,null,null,null,null];
-      saveAll();
-    }
-    return;
-  }
-});
-
-document.getElementById('team_gos').addEventListener('click', ()=>{ createTeamEvent('GOS'); });
-document.getElementById('team_def').addEventListener('click', ()=>{ createTeamEvent('DEF'); });
-
-document.getElementById('importBtn').addEventListener('click', async ()=>{
-  const input=document.getElementById('fileInput');
-  const status=document.getElementById('importStatus');
-  try{
-    status.innerText='';
-    if(!input || !input.files || input.files.length===0){ alert('Escolhe ficheiro CSV ou Excel'); return; }
-    const f=input.files[0];
-    const name=String(f.name||'').toLowerCase();
-    status.innerText=`A importar: ${f.name}...`;
-
-    let parsed=[];
-    if(name.endsWith('.csv')||name.endsWith('.tsv')){ const txt=await f.text(); parsed = parseCSV(txt); }
-    else if(name.endsWith('.xls')||name.endsWith('.xlsx')){ const ab=await f.arrayBuffer(); parsed=parseXLSXArrayBuffer(ab); }
-    else { alert('Formato não suportado. Usa CSV, TSV, XLS ou XLSX.'); status.innerText='Formato não suportado'; return; }
-
-    parsed = (parsed || []).map(r => ({
-      number: parseInt(r.number, 10),
-      name: String(r.name || '').trim(),
-      photo: String(r.photo || '').trim()
-    })).filter(r => !Number.isNaN(r.number) && r.name !== '');
-
-    if(parsed.length===0){ alert('Nenhuma linha válida encontrada. Verifica se tens colunas como number e name.'); status.innerText='Nenhuma linha válida encontrada'; return; }
-
-    ROSTER = parsed;
-    onField=[null,null,null,null,null];
-    queue=[];
-    session = {};
-    defaultSessionState();
-    saveAll();
-    status.innerText='Import: ' + ROSTER.length + ' atletas';
-    input.value='';
-  }catch(e){ console.error(e); alert('Erro ao importar: ' + (e?.message || e)); status.innerText='Erro no import'; }
-});
-
-document.getElementById('clearConv').addEventListener('click', ()=>{
-  if(confirm('Remover todos os convocados e eventos?')){
-    ROSTER=[]; queue=[]; onField=[null,null,null,null,null]; session={}; defaultSessionState(); saveAll();
-    document.getElementById('importStatus').innerText='Convocados limpos';
-  }
-});
-
-document.getElementById('manualAdd').addEventListener('click', ()=>{
-  const playerVal = document.getElementById('manualPlayer').value;
-  const code = document.getElementById('manualCode').value;
-  const note = document.getElementById('manualNote').value.trim();
-  const ratingVal = document.getElementById('manualRating').value;
-  let rating = null, rating_label = '';
-  if(ratingVal === '1'){ rating = 1; rating_label = 'A melhorar'; }
-  else if(ratingVal === '5'){ rating = 5; rating_label = 'Muito Bom'; }
-  if(!code){ alert('Seleciona um indicador de avaliação'); return; }
-
-  const ts = nowISO();
-  const minute = computeMinute(ts);
-  const part = session.currentPart || 1;
-
-  const evBase = {
-    event_id:'evt_'+Math.random().toString(36).slice(2,9),
-    session_id: session.session_id || document.getElementById('session_id').value || 's_offline',
-    part,
-    client_timestamp: ts,
-    minute,
-    clock_elapsed:getElapsedDisplayForPart(part),
-    player_id: (playerVal === '' ? null : parseInt(playerVal,10)),
-    event_code: code,
-    event_label: eventMeta[code].label,
-    event_sigla: eventMeta[code].sigla,
-    note: note,
-    rating: rating,
-    rating_label: rating_label
-  };
-  queue.push(evBase);
-
-  if(note){
-    const tsNote=nowISO();
-    const minuteNote=computeMinute(tsNote);
-    const playerForNote=(playerVal===''?null:parseInt(playerVal,10));
-    const evNote={
-      event_id:'evt_'+Math.random().toString(36).slice(2,9),
-      session_id: session.session_id || document.getElementById('session_id').value || 's_offline',
-      part,
-      client_timestamp: tsNote,
-      minute: minuteNote,
-      clock_elapsed:getElapsedDisplayForPart(part),
-      player_id: playerForNote,
-      event_code: 'NOTE',
-      event_label: eventMeta['NOTE'].label,
-      event_sigla: eventMeta['NOTE'].sigla,
-      note: note,
-      rating:'',
-      rating_label:''
-    };
-    queue.push(evNote);
-  }
-
-  document.getElementById('manualNote').value='';
-  document.getElementById('manualRating').value='';
-  saveAll();
-});
-
-document.getElementById('exportBtn').addEventListener('click', ()=>{
-  if(queue.length===0){ alert('Sem eventos'); return; }
-  const rows = queue.map(ev => {
-    const player = (ev.player_id == null) ? '' : ev.player_id;
-    const score = getScore();
-    const playerPlay = ev.player_id == null ? '' : getPlayerPlaySeconds(ev.player_id);
-    return [
-      ev.event_id, ev.session_id, ev.part, ev.client_timestamp, ev.minute, ev.clock_elapsed ?? '', player, playerPlay,
-      score.marcados, score.sofridos, ev.event_code, ev.event_label, ev.event_sigla, ev.rating || '', ev.rating_label || '', ev.note || ''
-    ].map(v => `"${(''+(v==null?'':v)).replace(/"/g,'""')}"`).join(',');
-  });
-  const hdr = '"event_id","session_id","part","client_timestamp","minute","clock_elapsed","player_id","player_play_seconds","score_marcados","score_sofridos","event_code","event_label","event_sigla","rating","rating_label","note"';
-  const csv = [hdr].concat(rows).join('\n');
-  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'events_export.csv';
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  URL.revokeObjectURL(url);
-});
-
-document.getElementById('saveSession').addEventListener('click', ()=>{
-  session.session_id=document.getElementById('session_id').value||('s_'+Date.now());
-  session.date=document.getElementById('date').value;
-  session.time=document.getElementById('time').value;
-  session.location=document.getElementById('location').value;
-  session.competition=document.getElementById('competition').value;
-  session.round=document.getElementById('round').value;
-  saveAll();
-  alert('Sessão salva: '+session.session_id);
-});
-
-document.getElementById('startPart').addEventListener('click', ()=>{ startPart(1); alert('1ª Parte iniciada'); });
-document.getElementById('startPart2').addEventListener('click', ()=>{ startPart(2); alert('2ª Parte iniciada'); });
-document.getElementById('pauseClock').addEventListener('click', ()=>{ pauseCurrentClock(); });
-document.getElementById('resumeClock').addEventListener('click', ()=>{ resumeCurrentClock(); });
-document.getElementById('resetClock').addEventListener('click', ()=>{
-  if(!session.currentPart){
-    alert('Primeiro seleciona/inicia uma parte.');
-    return;
-  }
-  if(confirm('Fazer reset ao relógio da parte atual e voltar a 00:00? Só é permitido se ainda não existirem eventos nessa parte.')){
-    resetCurrentClock();
-  }
-});
-
-function buildLegendContent(){
-  const container=document.getElementById('legendContent');
-  container.innerHTML='';
-  const items=Object.keys(eventMeta).map(k=>({code:k,...eventMeta[k]}));
-  items.sort((a,b)=>a.type-b.type||a.sigla.localeCompare(b.sigla));
-  let currentType=null;
-  items.forEach(it=>{
-    if(it.type!==currentType){
-      currentType=it.type;
-      const hdr=document.createElement('div');
-      hdr.style.marginTop='6px';
-      hdr.style.marginBottom='4px';
-      hdr.innerHTML=`<strong>Tipo ${currentType}</strong>`;
-      container.appendChild(hdr);
-    }
-    const row=document.createElement('div');
-    row.className='row';
-    row.style.alignItems='center';
-    row.style.gap='10px';
-    row.innerHTML=`<div style="width:28px;height:18px;background:${typeColors[it.type]};border-radius:4px;"></div><div style="flex:1;margin-left:8px"><strong>${it.sigla}</strong> — ${it.label}</div>`;
-    container.appendChild(row);
-  });
-}
-
-function showLegend(){
-  buildLegendContent();
-  document.getElementById('legendModal').style.display='flex';
-  document.getElementById('legendModal').setAttribute('aria-hidden','false');
-}
-
-function closeLegend(){
-  document.getElementById('legendModal').style.display='none';
-  document.getElementById('legendModal').setAttribute('aria-hidden','true');
-}
-
-document.getElementById('legendBtn').addEventListener('click', showLegend);
-document.getElementById('closeLegend').addEventListener('click', closeLegend);
-
-(async function init(){
-  try{
-    const r=localStorage.getItem(STORAGE_ROSTER); if(r) ROSTER=JSON.parse(r);
-    const q=localStorage.getItem(STORAGE_QUEUE); if(q) queue=JSON.parse(q);
-    const s=localStorage.getItem(STORAGE_SESSION); if(s) session=JSON.parse(s);
-    const of=localStorage.getItem(STORAGE_ONFIELD); if(of) onField=JSON.parse(of);
-
-    if(!ROSTER || ROSTER.length===0){
-      const resp = await fetch('atletas.csv', {cache:'no-store'});
-      if(resp.ok){
-        const txt = await resp.text();
-        ROSTER = parseCSV(txt);
-        localStorage.setItem(STORAGE_ROSTER, JSON.stringify(ROSTER));
-      }
-    }
-  }catch(e){ console.warn('init err',e); }
+function resetCurrentClock(){
 
   defaultSessionState();
-  ensureOnFieldShape();
-  fillSessionInputs();
-  renderAll();
-
-  setInterval(() => {
-    renderLiveInfo();
-    updatePlayerTimes();
-    renderPlayerStatsTable();
-    renderSummaryCards();
-    renderCharts();
-  }, 1000);
-})();
-
-// GUARDAR JOGO
-document.getElementById('saveGameBtn').addEventListener('click', () => {
-
-  const data = {
-    session: session,
-    roster: ROSTER,
-    events: queue,
-    onField: onField
-  };
-
-  const json = JSON.stringify(data, null, 2);
-
-  const blob = new Blob([json], {type: "application/json"});
-  const url = URL.createObjectURL(blob);
-
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "futsal_game_backup.json";
-  a.click();
-
-  URL.revokeObjectURL(url);
-});
 
 
-// ABRIR JOGO
-document.getElementById('loadGameBtn').addEventListener('click', () => {
-  document.getElementById('loadGameFile').click();
-});
+  if(!session.currentPart){
 
-document.getElementById('loadGameFile').addEventListener('change', (e) => {
+    alert(
+      'Primeiro seleciona/inicia uma parte.'
+    );
 
-  const file = e.target.files[0];
-  if(!file) return;
+    return;
 
-  const reader = new FileReader();
+  }
 
-  reader.onload = function(event){
 
-    try{
+  if(
+    hasEventsInPart(
+      session.currentPart
+    )
+  ){
 
-      const data = JSON.parse(event.target.result);
+    alert(
+      'O reset do relógio só pode ser feito antes de registar eventos nesta parte.'
+    );
 
-      session = data.session || {};
-      ROSTER = data.roster || [];
-      queue = data.events || [];
-      onField = data.onField || [null,null,null,null,null];
+    return;
+
+  }
+
+
+  session.clockRunning =
+    false;
+
+
+  if(session.currentPart === 1){
+
+    session.part1_elapsed_offset =
+      0;
+
+    session.part1_running_since =
+      null;
+
+    session.part1_start =
+      null;
+
+  }else{
+
+    session.part2_elapsed_offset =
+      0;
+
+    session.part2_running_since =
+      null;
+
+    session.part2_start =
+      null;
+
+  }
+
+
+  saveAll();
+
+}
+
+
+/* ============================================================
+   MANUAL
+============================================================ */
+
+function populateManualPlayerList(){
+
+  const sel =
+    document.getElementById(
+      'manualPlayer'
+    );
+
+
+  const cur =
+    sel.value;
+
+
+  sel.innerHTML =
+    '<option value="">(Equipa)</option>';
+
+
+  ROSTER.forEach(
+    p => {
+
+      const opt =
+        document.createElement(
+          'option'
+        );
+
+      opt.value =
+        p.number;
+
+      opt.textContent =
+        `${p.number} - ${p.name}`;
+
+      sel.appendChild(
+        opt
+      );
+
+    }
+  );
+
+
+  sel.value =
+    cur || '';
+
+}
+
+
+function populateManualCodeList(){
+
+  const sel =
+    document.getElementById(
+      'manualCode'
+    );
+
+
+  sel.innerHTML = '';
+
+
+  Object.keys(eventMeta)
+    .filter(
+      c =>
+        c.startsWith('AS_')
+    )
+    .forEach(
+      c => {
+
+        const opt =
+          document.createElement(
+            'option'
+          );
+
+        opt.value =
+          c;
+
+        opt.textContent =
+          eventMeta[c].label;
+
+        sel.appendChild(
+          opt
+        );
+
+      }
+    );
+
+
+  sel.value =
+    'AS_OUT';
+
+}
+
+
+/* ============================================================
+   CLIQUES CAMPO
+============================================================ */
+
+document.addEventListener(
+  'click',
+  e => {
+
+
+    const addBtn =
+      e.target.closest(
+        '.addFieldBtn'
+      );
+
+
+    if(addBtn){
+
+      const num =
+        parseInt(
+          addBtn.dataset.num,
+          10
+        );
+
+
+      if(inOnField(num)){
+
+        alert(
+          'Já em campo'
+        );
+
+        return;
+
+      }
+
+
+      if(
+        onField.filter(Boolean).length >= 5
+      ){
+
+        alert(
+          'Campo já tem 5'
+        );
+
+        return;
+
+      }
+
+
+      const empty =
+        onField.indexOf(null);
+
+
+      if(empty === -1){
+
+        onField.push({
+          number:num,
+          position:null
+        });
+
+      }else{
+
+        onField[empty] = {
+          number:num,
+          position:null
+        };
+
+      }
+
+
+      /*
+        Se entrar antes do Start,
+        game_marker será 0.
+
+        O contador só avança quando
+        o relógio oficial começar.
+      */
+
+      createAndQueueEvent(
+        num,
+        'ENT'
+      );
+
+
+      return;
+
+    }
+
+
+    const posBtn =
+      e.target.closest(
+        '.pos-btn'
+      );
+
+
+    if(posBtn){
+
+      const idx =
+        parseInt(
+          posBtn.dataset.idx,
+          10
+        );
+
+
+      const newPos =
+        posBtn.dataset.pos;
+
+
+      if(onField[idx]){
+
+        onField[idx].position =
+          newPos;
+
+
+        const codeMap =
+        {
+          Fixo:'P_FIXO',
+          Ala:'P_ALA',
+          Pivot:'P_PIVOT',
+          GR:'P_GR'
+        };
+
+
+        createAndQueueEvent(
+          onField[idx].number,
+          codeMap[newPos]
+        );
+
+      }
+
+
+      return;
+
+    }
+
+
+    const rm =
+      e.target.closest(
+        '.slotRemove'
+      );
+
+
+    if(rm){
+
+      const idx =
+        parseInt(
+          rm.dataset.idx,
+          10
+        );
+
+
+      const entry =
+        onField[idx];
+
+
+      if(
+        entry &&
+        entry.number != null
+      ){
+
+        createAndQueueEvent(
+          entry.number,
+          'SAI'
+        );
+
+      }
+
+
+      onField[idx] =
+        null;
+
 
       saveAll();
 
-      alert("Jogo carregado com sucesso");
 
-    }catch(err){
-      alert("Erro ao abrir ficheiro");
+      return;
+
     }
 
-  };
 
-  reader.readAsText(file);
+    if(
+      e.target &&
+      e.target.id ===
+        'clearSlots'
+    ){
 
-});
+      if(
+        confirm(
+          'Remover todos os 5 do campo?'
+        )
+      ){
+
+        onField.forEach(
+          entry => {
+
+            if(
+              entry &&
+              entry.number != null
+            ){
+
+              createAndQueueEvent(
+                entry.number,
+                'SAI'
+              );
+
+            }
+
+          }
+        );
+
+
+        onField =
+        [
+          null,
+          null,
+          null,
+          null,
+          null
+        ];
+
+
+        saveAll();
+
+      }
+
+    }
+
+  }
+);
+
+
+/* ============================================================
+   EQUIPA
+============================================================ */
+
+document
+  .getElementById(
+    'team_gos'
+  )
+  .addEventListener(
+    'click',
+    () =>
+      createTeamEvent(
+        'GOS'
+      )
+  );
+
+
+document
+  .getElementById(
+    'team_def'
+  )
+  .addEventListener(
+    'click',
+    () =>
+      createTeamEvent(
+        'DEF'
+      )
+  );
+
+
+/* ============================================================
+   IMPORTAR
+============================================================ */
+
+document
+  .getElementById(
+    'importBtn'
+  )
+  .addEventListener(
+    'click',
+    async () => {
+
+
+      const input =
+        document.getElementById(
+          'fileInput'
+        );
+
+
+      const status =
+        document.getElementById(
+          'importStatus'
+        );
+
+
+      try{
+
+
+        if(
+          !input.files ||
+          !input.files.length
+        ){
+
+          alert(
+            'Escolhe ficheiro CSV ou Excel'
+          );
+
+          return;
+
+        }
+
+
+        const f =
+          input.files[0];
+
+
+        const name =
+          f.name.toLowerCase();
+
+
+        let parsed = [];
+
+
+        if(
+          name.endsWith('.csv') ||
+          name.endsWith('.tsv')
+        ){
+
+          parsed =
+            parseCSV(
+              await f.text()
+            );
+
+        }
+
+        else if(
+          name.endsWith('.xls') ||
+          name.endsWith('.xlsx')
+        ){
+
+          parsed =
+            parseXLSXArrayBuffer(
+              await f.arrayBuffer()
+            );
+
+        }
+
+        else{
+
+          alert(
+            'Formato não suportado.'
+          );
+
+          return;
+
+        }
+
+
+        parsed =
+          parsed
+            .map(
+              r => ({
+
+                number:
+                  parseInt(
+                    r.number,
+                    10
+                  ),
+
+                name:
+                  String(
+                    r.name || ''
+                  ).trim(),
+
+                photo:
+                  String(
+                    r.photo || ''
+                  ).trim()
+
+              })
+            )
+
+            .filter(
+              r =>
+                !Number.isNaN(
+                  r.number
+                ) &&
+                r.name
+            );
+
+
+        if(!parsed.length){
+
+          alert(
+            'Nenhuma linha válida encontrada.'
+          );
+
+          return;
+
+        }
+
+
+        ROSTER =
+          parsed;
+
+        queue =
+          [];
+
+        onField =
+        [
+          null,
+          null,
+          null,
+          null,
+          null
+        ];
+
+        session =
+          {};
+
+        defaultSessionState();
+
+        saveAll();
+
+
+        status.innerText =
+          `Import: ${ROSTER.length} atletas`;
+
+
+        input.value =
+          '';
+
+
+      }catch(err){
+
+
+        console.error(err);
+
+
+        alert(
+          'Erro ao importar: ' +
+          err.message
+        );
+
+
+      }
+
+    }
+  );
+
+
+document
+  .getElementById(
+    'clearConv'
+  )
+  .addEventListener(
+    'click',
+    () => {
+
+      if(
+        confirm(
+          'Remover todos os convocados e eventos?'
+        )
+      ){
+
+        ROSTER = [];
+        queue = [];
+
+        onField =
+        [
+          null,
+          null,
+          null,
+          null,
+          null
+        ];
+
+        session = {};
+
+        defaultSessionState();
+
+        saveAll();
+
+      }
+
+    }
+  );
+
+
+/* ============================================================
+   AVALIAÇÃO
+============================================================ */
+
+document
+  .getElementById(
+    'manualAdd'
+  )
+  .addEventListener(
+    'click',
+    () => {
+
+
+      const playerVal =
+        document.getElementById(
+          'manualPlayer'
+        ).value;
+
+
+      const code =
+        document.getElementById(
+          'manualCode'
+        ).value;
+
+
+      const note =
+        document.getElementById(
+          'manualNote'
+        ).value.trim();
+
+
+      const ratingVal =
+        document.getElementById(
+          'manualRating'
+        ).value;
+
+
+      let rating = null;
+      let rating_label = '';
+
+
+      if(ratingVal === '1'){
+
+        rating = 1;
+        rating_label =
+          'A melhorar';
+
+      }
+
+
+      if(ratingVal === '5'){
+
+        rating = 5;
+        rating_label =
+          'Muito Bom';
+
+      }
+
+
+      const player_id =
+        playerVal === ''
+          ? null
+          : parseInt(
+              playerVal,
+              10
+            );
+
+
+      queue.push(
+        makeEvent(
+          player_id,
+          code,
+          note,
+          rating,
+          rating_label
+        )
+      );
+
+
+      if(note){
+
+        queue.push(
+          makeEvent(
+            player_id,
+            'NOTE',
+            note
+          )
+        );
+
+      }
+
+
+      document.getElementById(
+        'manualNote'
+      ).value = '';
+
+
+      document.getElementById(
+        'manualRating'
+      ).value = '';
+
+
+      saveAll();
+
+    }
+  );
+
+
+/* ============================================================
+   EXPORTAR CSV
+============================================================ */
+
+document
+  .getElementById(
+    'exportBtn'
+  )
+  .addEventListener(
+    'click',
+    () => {
+
+
+      if(!queue.length){
+
+        alert(
+          'Sem eventos'
+        );
+
+        return;
+
+      }
+
+
+      const hdr =
+        '"event_id",' +
+        '"session_id",' +
+        '"part",' +
+        '"client_timestamp",' +
+        '"minute",' +
+        '"player_id",' +
+        '"score_marcados",' +
+        '"score_sofridos",' +
+        '"event_code",' +
+        '"event_label",' +
+        '"event_sigla",' +
+        '"rating",' +
+        '"rating_label",' +
+        '"note"';
+
+
+      const rows =
+        queue.map(
+          ev => {
+
+
+            const score =
+              getScore();
+
+
+            return [
+
+              ev.event_id,
+
+              ev.session_id,
+
+              ev.part,
+
+              ev.client_timestamp,
+
+              ev.minute,
+
+              ev.player_id ?? '',
+
+              score.marcados,
+
+              score.sofridos,
+
+              ev.event_code,
+
+              ev.event_label,
+
+              ev.event_sigla,
+
+              ev.rating || '',
+
+              ev.rating_label || '',
+
+              ev.note || ''
+
+            ]
+
+            .map(
+              v =>
+                `"${String(
+                  v ?? ''
+                ).replace(
+                  /"/g,
+                  '""'
+                )}"`
+            )
+
+            .join(',');
+
+          }
+        );
+
+
+      const csv =
+        [
+          hdr,
+          ...rows
+        ].join('\n');
+
+
+      const blob =
+        new Blob(
+          [csv],
+          {
+            type:
+              'text/csv;charset=utf-8;'
+          }
+        );
+
+
+      const url =
+        URL.createObjectURL(
+          blob
+        );
+
+
+      const a =
+        document.createElement(
+          'a'
+        );
+
+
+      a.href =
+        url;
+
+
+      a.download =
+        'events_export.csv';
+
+
+      document.body.appendChild(
+        a
+      );
+
+
+      a.click();
+
+
+      a.remove();
+
+
+      URL.revokeObjectURL(
+        url
+      );
+
+    }
+  );
+
+
+/* ============================================================
+   SESSÃO
+============================================================ */
+
+document
+  .getElementById(
+    'saveSession'
+  )
+  .addEventListener(
+    'click',
+    () => {
+
+
+      session.session_id =
+        document.getElementById(
+          'session_id'
+        ).value ||
+        (
+          's_' +
+          Date.now()
+        );
+
+
+      session.date =
+        document.getElementById(
+          'date'
+        ).value;
+
+
+      session.time =
+        document.getElementById(
+          'time'
+        ).value;
+
+
+      session.location =
+        document.getElementById(
+          'location'
+        ).value;
+
+
+      session.competition =
+        document.getElementById(
+          'competition'
+        ).value;
+
+
+      session.round =
+        document.getElementById(
+          'round'
+        ).value;
+
+
+      saveAll();
+
+
+      alert(
+        'Sessão salva'
+      );
+
+    }
+  );
+
+
+/* ============================================================
+   RELÓGIO
+============================================================ */
+
+document
+  .getElementById(
+    'startPart'
+  )
+  .addEventListener(
+    'click',
+    () => {
+
+      startPart(1);
+
+      alert(
+        '1ª Parte iniciada'
+      );
+
+    }
+  );
+
+
+document
+  .getElementById(
+    'startPart2'
+  )
+  .addEventListener(
+    'click',
+    () => {
+
+      startPart(2);
+
+      alert(
+        '2ª Parte iniciada'
+      );
+
+    }
+  );
+
+
+document
+  .getElementById(
+    'pauseClock'
+  )
+  .addEventListener(
+    'click',
+    pauseCurrentClock
+  );
+
+
+document
+  .getElementById(
+    'resumeClock'
+  )
+  .addEventListener(
+    'click',
+    resumeCurrentClock
+  );
+
+
+document
+  .getElementById(
+    'resetClock'
+  )
+  .addEventListener(
+    'click',
+    () => {
+
+      if(
+        confirm(
+          'Fazer reset ao relógio da parte atual?'
+        )
+      ){
+
+        resetCurrentClock();
+
+      }
+
+    }
+  );
+
+
+/* ============================================================
+   LEGENDA
+============================================================ */
+
+function buildLegendContent(){
+
+  const container =
+    document.getElementById(
+      'legendContent'
+    );
+
+
+  container.innerHTML = '';
+
+
+  const items =
+    Object.keys(
+      eventMeta
+    )
+    .map(
+      k => ({
+        code:k,
+        ...eventMeta[k]
+      })
+    )
+    .sort(
+      (a,b) =>
+        a.type -
+        b.type ||
+        a.sigla.localeCompare(
+          b.sigla
+        )
+    );
+
+
+  let currentType =
+    null;
+
+
+  items.forEach(
+    it => {
+
+
+      if(
+        it.type !==
+        currentType
+      ){
+
+        currentType =
+          it.type;
+
+
+        const hdr =
+          document.createElement(
+            'div'
+          );
+
+
+        hdr.style.marginTop =
+          '8px';
+
+
+        hdr.innerHTML =
+          `<strong>Tipo ${currentType}</strong>`;
+
+
+        container.appendChild(
+          hdr
+        );
+
+      }
+
+
+      const row =
+        document.createElement(
+          'div'
+        );
+
+
+      row.className =
+        'row';
+
+
+      row.innerHTML = `
+
+        <div style="
+          width:28px;
+          height:18px;
+          background:${typeColors[it.type]};
+          border-radius:4px">
+        </div>
+
+        <div>
+          <strong>
+            ${it.sigla}
+          </strong>
+          — ${it.label}
+        </div>
+
+      `;
+
+
+      container.appendChild(
+        row
+      );
+
+    }
+  );
+
+}
+
+
+document
+  .getElementById(
+    'legendBtn'
+  )
+  .addEventListener(
+    'click',
+    () => {
+
+      buildLegendContent();
+
+      document.getElementById(
+        'legendModal'
+      ).style.display =
+        'flex';
+
+    }
+  );
+
+
+document
+  .getElementById(
+    'closeLegend'
+  )
+  .addEventListener(
+    'click',
+    () => {
+
+      document.getElementById(
+        'legendModal'
+      ).style.display =
+        'none';
+
+    }
+  );
+
+
+/* ============================================================
+   GUARDAR JOGO
+============================================================ */
+
+document
+  .getElementById(
+    'saveGameBtn'
+  )
+  .addEventListener(
+    'click',
+    () => {
+
+
+      const data =
+      {
+        session,
+        roster:ROSTER,
+        events:queue,
+        onField
+      };
+
+
+      const json =
+        JSON.stringify(
+          data,
+          null,
+          2
+        );
+
+
+      const blob =
+        new Blob(
+          [json],
+          {
+            type:
+              'application/json'
+          }
+        );
+
+
+      const url =
+        URL.createObjectURL(
+          blob
+        );
+
+
+      const a =
+        document.createElement(
+          'a'
+        );
+
+
+      a.href =
+        url;
+
+
+      a.download =
+        'futsal_game_backup.json';
+
+
+      a.click();
+
+
+      URL.revokeObjectURL(
+        url
+      );
+
+    }
+  );
+
+
+/* ============================================================
+   ABRIR JOGO
+============================================================ */
+
+document
+  .getElementById(
+    'loadGameBtn'
+  )
+  .addEventListener(
+    'click',
+    () => {
+
+      document.getElementById(
+        'loadGameFile'
+      ).click();
+
+    }
+  );
+
+
+document
+  .getElementById(
+    'loadGameFile'
+  )
+  .addEventListener(
+    'change',
+    e => {
+
+
+      const file =
+        e.target.files[0];
+
+
+      if(!file){
+        return;
+      }
+
+
+      const reader =
+        new FileReader();
+
+
+      reader.onload =
+        evt => {
+
+
+          try{
+
+
+            const data =
+              JSON.parse(
+                evt.target.result
+              );
+
+
+            session =
+              data.session || {};
+
+
+            ROSTER =
+              data.roster || [];
+
+
+            queue =
+              data.events || [];
+
+
+            onField =
+              data.onField ||
+              [
+                null,
+                null,
+                null,
+                null,
+                null
+              ];
+
+
+            defaultSessionState();
+
+            ensureOnFieldShape();
+
+            saveAll();
+
+            fillSessionInputs();
+
+
+            alert(
+              'Jogo carregado com sucesso'
+            );
+
+
+          }catch(err){
+
+
+            console.error(
+              err
+            );
+
+
+            alert(
+              'Erro ao abrir ficheiro'
+            );
+
+
+          }
+
+        };
+
+
+      reader.readAsText(
+        file
+      );
+
+    }
+  );
+
+
+/* ============================================================
+   INIT
+============================================================ */
+
+(async function init(){
+
+
+  try{
+
+
+    /*
+      Se ainda não existirem convocados,
+      tenta carregar automaticamente atletas.csv.
+    */
+
+    if(
+      !ROSTER ||
+      !ROSTER.length
+    ){
+
+      const resp =
+        await fetch(
+          'atletas.csv',
+          {
+            cache:'no-store'
+          }
+        );
+
+
+      if(resp.ok){
+
+        ROSTER =
+          parseCSV(
+            await resp.text()
+          );
+
+
+        localStorage.setItem(
+          STORAGE_ROSTER,
+          JSON.stringify(
+            ROSTER
+          )
+        );
+
+      }
+
+    }
+
+
+  }catch(e){
+
+
+    console.warn(
+      'init err',
+      e
+    );
+
+
+  }
+
+
+  defaultSessionState();
+
+  ensureOnFieldShape();
+
+  fillSessionInputs();
+
+  renderAll();
+
+
+  setInterval(
+    () => {
+
+      /*
+        Estes três relógios ficam sincronizados:
+
+        - relógio da parte
+        - Tempo em jogo
+        - Tempo na quadra
+
+        Se o relógio é pausado,
+        nenhum deles avança.
+      */
+
+      renderLiveInfo();
+
+      updatePlayerTimes();
+
+      renderPlayerStatsTable();
+
+      renderSummaryCards();
+
+      maybeRefreshIntensityChart();
+
+    },
+    1000
+  );
+
+
+})();
+
 </script>
+
 </body>
 </html>
