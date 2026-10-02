@@ -78,18 +78,7 @@ canvas{width:100%!important;height:300px!important}
 <div id="toast"></div>
 
 <div class="card">
-  <div class="section-title">1. Elenco (importar só uma vez, ou quando houver alterações)</div>
-  <div class="small">CSV / Excel com as colunas <strong>number</strong>, <strong>photo</strong> (opcional) e <strong>name</strong>. O elenco fica guardado no browser; em cada jogo basta retirar os não convocados.</div>
-  <div class="row">
-    <input id="fileInput" type="file" accept=".csv,.tsv,.xlsx,.xls">
-    <button id="importBtn" class="btn gray" type="button">Importar</button>
-    <button id="clearConv" class="btn warn" type="button">Limpar</button>
-    <span id="importStatus" class="small"></span>
-  </div>
-</div>
-
-<div class="card">
-  <div class="section-title">2. Gravação de ficheiros</div>
+  <div class="section-title">1. Gravação de ficheiros</div>
   <div class="row">
     <button id="saveGameBtn" class="btn green" type="button">Guardar jogo</button>
     <button id="loadGameBtn" class="btn gray" type="button">Abrir jogo</button>
@@ -100,7 +89,7 @@ canvas{width:100%!important;height:300px!important}
 </div>
 
 <div class="card">
-  <div class="section-title">3. Informação do jogo</div>
+  <div class="section-title">2. Informação do jogo</div>
   <div class="row">
     <input id="opponent" placeholder="Equipa adversária" style="width:200px">
     <input id="date" type="date">
@@ -126,7 +115,7 @@ canvas{width:100%!important;height:300px!important}
 </div>
 
 <div class="card">
-  <div class="section-title">4. Convocados <span id="calledCount" class="small"></span></div>
+  <div class="section-title">3. Convocados <span id="calledCount" class="small"></span></div>
   <div class="small">Aparecem todos por defeito. Usa "Retirar" nos que não estão convocados para este jogo.</div>
   <div id="roster" class="players"></div>
   <div id="absentBox" style="display:none;margin-top:12px"><div class="small"><strong>Não convocados</strong></div><div id="absentList" class="row"></div></div>
@@ -134,7 +123,7 @@ canvas{width:100%!important;height:300px!important}
 
 <div class="card">
   <div class="row" style="justify-content:space-between;margin-top:0">
-    <div class="section-title" style="margin:0">5. Jogadores em campo</div>
+    <div class="section-title" style="margin:0">4. Jogadores em campo</div>
     <button id="clearSlots" class="btn gray" type="button">Limpar Campo</button>
   </div>
   <div class="row">
@@ -147,7 +136,7 @@ canvas{width:100%!important;height:300px!important}
 </div>
 
 <div class="card">
-  <div class="section-title">6. Resumo do jogo</div>
+  <div class="section-title">5. Resumo do jogo</div>
   <div class="summary-grid">
     <div class="summary-box"><div class="small">Golos marcados</div><div id="sumGoalsFor" class="big">0</div></div>
     <div class="summary-box"><div class="small">Golos sofridos</div><div id="sumGoalsAgainst" class="big">0</div></div>
@@ -171,7 +160,7 @@ canvas{width:100%!important;height:300px!important}
 </div>
 
 <div class="card">
-  <div class="section-title">7. Registo de outros eventos</div>
+  <div class="section-title">6. Registo de outros eventos</div>
   <div class="manual-row">
     <select id="manualPlayer" style="min-width:200px"><option value="">(Equipa)</option></select>
     <select id="manualCode" style="min-width:300px"></select>
@@ -185,7 +174,7 @@ canvas{width:100%!important;height:300px!important}
 
 <div class="card">
   <div class="row" style="justify-content:space-between;margin-top:0">
-    <div class="section-title" style="margin:0">8. Registo dos eventos (mais recente primeiro)</div>
+    <div class="section-title" style="margin:0">7. Registo dos eventos (mais recente primeiro)</div>
     <div class="row" style="margin:0">
       <select id="evFilter"><option value="">Todos</option></select>
       <button id="exportBtn" class="btn" type="button">Exportar Eventos CSV</button>
@@ -488,7 +477,7 @@ function goal(num){
 }
 document.addEventListener('click',e=>{
  const t=e.target;let b;
- if(b=t.closest('.removeBtn')){const n=+b.dataset.num;if(inField(n)||queue.some(e=>e.player_id===n))return toast('Já tem eventos neste jogo — não pode ser retirado');session.absent=[...absent(),n];saveAll();return}
+ if(b=t.closest('.removeBtn')){const n=+b.dataset.num;if(inField(n))return toast('Está em campo — tira-o primeiro');const k=queue.filter(e=>e.player_id===n).length;if(k)return toast('Tem '+k+' eventos registados neste jogo. Se for de um jogo anterior, usa "Novo jogo".');session.absent=[...absent(),n];saveAll();return}
  if(b=t.closest('.restoreBtn')){const n=+b.dataset.num;session.absent=absent().filter(x=>x!==n);saveAll();return}
  if(b=t.closest('.addFieldBtn'))return enter(+b.dataset.num);
  if(b=t.closest('.pos-btn')){const i=+b.dataset.idx;if(onField[i]){onField[i].position=b.dataset.pos;add(onField[i].number,posCode[b.dataset.pos]);saveAll()}return}
@@ -533,28 +522,10 @@ function rowsToRoster(arr){
  }
  return out;
 }
-$('importBtn').onclick=async()=>{
- const inp=$('fileInput');
- try{
-  if(!inp.files||!inp.files.length)return toast('Escolhe um ficheiro CSV ou Excel');
-  const f=inp.files[0],n=f.name.toLowerCase();let parsed;
-  if(/\.(csv|tsv)$/.test(n))parsed=rowsToRoster(splitCSV(await f.text()));
-  else if(/\.xlsx?$/.test(n)){const wb=XLSX.read(new Uint8Array(await f.arrayBuffer()),{type:'array'});parsed=rowsToRoster(XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,defval:''}))}
-  else return toast('Formato não suportado');
-  if(!parsed.length)return toast('Nenhuma linha válida encontrada');
-  ROSTER=parsed;session.absent=absent().filter(n=>parsed.some(x=>x.number===n));saveAll();
-  $('importStatus').textContent='Importados: '+ROSTER.length+' atletas';inp.value='';
- }catch(err){console.error(err);toast('Erro ao importar: '+err.message)}
-};
 $('newGameBtn').onclick=()=>{
  if(!confirm('Iniciar um novo jogo? Isto apaga os eventos, o relógio e os dados do jogo atual (guarda primeiro com "Guardar jogo"). O elenco mantém-se e voltam a aparecer todos os convocados.'))return;
  queue=[];onField=nulls();session={};swapIdx=null;defSession();fillInputs();saveAll();toast('Novo jogo iniciado');
 };
-$('clearConv').onclick=()=>{
- if(!confirm('Remover todos os convocados e eventos?'))return;
- ROSTER=[];queue=[];onField=nulls();session={};defSession();fillInputs();saveAll();
-};
-
 /* ---------- Eventos manuais ---------- */
 $('manualAdd').onclick=()=>{
  const pv=$('manualPlayer').value,code=$('manualCode').value,note=$('manualNote').value.trim(),rv=$('manualRating').value;
@@ -615,13 +586,13 @@ window.addEventListener('beforeunload',e=>{if(queue.length){e.preventDefault();e
 /* ---------- Init ---------- */
 (async function init(){
  try{
-  if(!ROSTER||!ROSTER.length){
-   const resp=await fetch('atletas.csv',{cache:'no-store'});
-   if(resp.ok){ROSTER=rowsToRoster(splitCSV(await resp.text()));localStorage.setItem(K.r,JSON.stringify(ROSTER))}
-  }
- }catch(e){if(location.protocol==='file:')toast('Abre via servidor local ou usa "Importar" (atletas.csv não carrega em file://)')}
+  const resp=await fetch('atletas.csv',{cache:'no-store'});
+  if(resp.ok){const rows=rowsToRoster(splitCSV(await resp.text()));if(rows.length){ROSTER=rows;localStorage.setItem(K.r,JSON.stringify(ROSTER))}}
+ }catch(e){}
+ if(!ROSTER.length)toast('Não foi possível carregar o atletas.csv (abre a página via servidor, não diretamente do ficheiro)');
  defSession();fixField();fillInputs();initCharts();renderAll();
  if(session.clockRunning)lock();
+ if(queue.length)toast('Jogo anterior recuperado ('+queue.length+' eventos). Usa "Novo jogo" para começar do zero.');
  setInterval(()=>{
   renderLive();updTimes();renderStats();renderSummary();
   if(currentAbsMin()!==lastMin||queue.length!==lastQ)renderCharts();
