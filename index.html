@@ -48,10 +48,17 @@ th,td{padding:6px;border-bottom:1px solid #eee6b8;font-size:13px;text-align:left
 canvas{width:100%!important;height:300px!important}
 .header{display:flex;align-items:center;gap:18px;margin:6px 0 14px}
 .logo{width:clamp(56px,9vw,88px);height:clamp(56px,9vw,88px);object-fit:contain}
-#stickyBar{position:sticky;top:0;z-index:1000;background:#111;color:var(--y);padding:9px 14px;display:flex;justify-content:space-between;font-weight:700;font-size:14px;border-radius:0 0 8px 8px;border-bottom:4px solid var(--y);margin-bottom:8px;box-shadow:0 2px 6px rgba(0,0,0,.25)}
-#stickyBar.foul{background:var(--bad);color:#fff}
 #modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);align-items:center;justify-content:center;z-index:9999}
 #modal .panel{background:#fff;padding:16px;border-radius:10px;max-width:720px;width:94%;max-height:90vh;overflow:auto}
+.clockbar{position:sticky;top:0;z-index:1000;background:#fff;border:1px solid var(--line);border-bottom:4px solid var(--y);border-radius:0 0 8px 8px;padding:8px 10px;margin-bottom:12px;box-shadow:0 3px 8px rgba(0,0,0,.2)}
+.clockbar .row{margin-top:0}
+.clockbar .btn{padding:6px 10px;font-size:14px}
+.clockbar .summary-grid{grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px}
+.clockbar .summary-box{padding:4px 8px}
+.clockbar .big{font-size:20px}
+.summary-box.foul{background:#d62828;border-color:#d62828}
+.summary-box.foul .small,.summary-box.foul .big{color:#fff}
+@media(max-width:520px){.clockbar .summary-grid{grid-template-columns:repeat(2,1fr)}}
 .lrow{display:flex;align-items:center;gap:10px;padding:5px 0;border-bottom:1px solid #eee6b8}
 #toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:#222;color:#fff;padding:10px 16px;border-radius:8px;z-index:10000;display:none;font-size:14px}
 .tblwrap{overflow-x:auto}
@@ -61,8 +68,6 @@ canvas{width:100%!important;height:300px!important}
 </style>
 </head>
 <body>
-
-<div id="stickyBar"><span id="stickyPart">—</span><span id="stickyElapsed">00:00</span><span id="stickyScore">0 - 0</span><span id="stickyFouls">Faltas: 0</span></div>
 
 <div class="header">
   <img class="logo" src="images/SCBM.jpg" alt="SC Beira-Mar" onerror="this.style.display='none'">
@@ -98,6 +103,9 @@ canvas{width:100%!important;height:300px!important}
     <input id="round" placeholder="Jornada" style="width:90px">
     <label class="small">Duração da parte (min) <input id="partMin" type="number" min="1" max="60" value="20" style="width:70px"></label>
   </div>
+</div>
+
+<div class="clockbar">
   <div class="row">
     <button id="startPart" class="btn green" type="button">Início 1ª Parte</button>
     <button id="endPart1" class="btn warn" type="button">Fim 1ª Parte</button>
@@ -110,6 +118,7 @@ canvas{width:100%!important;height:300px!important}
     <div class="summary-box"><div class="small">Parte atual</div><div id="livePart" class="big">—</div></div>
     <div class="summary-box"><div class="small">Tempo decorrido</div><div id="liveElapsedPart" class="big">00:00</div></div>
     <div class="summary-box"><div class="small">Resultado</div><div id="liveScore" class="big">0 - 0</div></div>
+    <div class="summary-box" id="foulBox"><div class="small">Faltas da parte</div><div id="liveFouls" class="big">0</div></div>
   </div>
 </div>
 
@@ -396,9 +405,9 @@ function renderFilter(){
 function renderLive(){
  const cp=session.currentPart||null,pt=cp?cp+'ª Parte':'—',el=cp?fmt(partElapsed(cp)):'00:00',sc=score(),st=sc.marcados+' - '+sc.sofridos;
  const fouls=queue.filter(e=>e.event_code==='FCO'&&e.part===(cp||1)).length;
- [['livePart','stickyPart',pt],['liveElapsedPart','stickyElapsed',el],['liveScore','stickyScore',st]].forEach(([a,b,v])=>{$(a).textContent=v;$(b).textContent=v});
- $('stickyFouls').textContent='Faltas: '+fouls+(fouls>=5?' (livres diretos)':'');
- $('stickyBar').classList.toggle('foul',fouls>=5);
+ $('livePart').textContent=pt;$('liveElapsedPart').textContent=el;$('liveScore').textContent=st;
+ $('liveFouls').textContent=fouls+(fouls>=5?' (livres diretos)':'');
+ $('foulBox').classList.toggle('foul',fouls>=5);
 }
 function renderStats(){
  document.querySelector('#playerStatsTable tbody').innerHTML=playerStats().map(s=>`<tr><td>${s.number}</td><td>${esc(s.name)}</td><td>${fmt(s.sec)}</td><td>${s.goals}</td><td>${s.ass}</td><td>${s.rab}</td><td>${s.rfb}</td><td>${s.rec}</td><td>${s.per}</td><td>${s.fco}</td><td>${s.fso}</td><td>${s.def}</td></tr>`).join('');
