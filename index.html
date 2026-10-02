@@ -1183,12 +1183,21 @@ function closeLegend(){
 document.getElementById('legendBtn').addEventListener('click', showLegend);
 document.getElementById('closeLegend').addEventListener('click', closeLegend);
 
-(function init(){
+(async function init(){
   try{
     const r=localStorage.getItem(STORAGE_ROSTER); if(r) ROSTER=JSON.parse(r);
     const q=localStorage.getItem(STORAGE_QUEUE); if(q) queue=JSON.parse(q);
     const s=localStorage.getItem(STORAGE_SESSION); if(s) session=JSON.parse(s);
     const of=localStorage.getItem(STORAGE_ONFIELD); if(of) onField=JSON.parse(of);
+
+    if(!ROSTER || ROSTER.length===0){
+      const resp = await fetch('atletas.csv', {cache:'no-store'});
+      if(resp.ok){
+        const txt = await resp.text();
+        ROSTER = parseCSV(txt);
+        localStorage.setItem(STORAGE_ROSTER, JSON.stringify(ROSTER));
+      }
+    }
   }catch(e){ console.warn('init err',e); }
 
   defaultSessionState();
