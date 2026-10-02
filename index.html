@@ -227,7 +227,9 @@ const codePos={P_FIXO:'Fixo',P_ALA:'Ala',P_PIVOT:'Pivot',P_GR:'GR'};
 /* ---------- Estado ---------- */
 const K={r:'juvenis_convocados_roster_v2',q:'juvenis_events_queue_v2',s:'juvenis_session_v3',f:'juvenis_onfield_v2'};
 const load=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}};
-let ROSTER=load(K.r,[]),queue=load(K.q,[]),session=load(K.s,{}),onField=load(K.f,[]);
+// Cada vez que a página abre, o jogo começa do zero (só o elenco fica em cache)
+[K.q,K.s,K.f].forEach(k=>{try{localStorage.removeItem(k)}catch{}});
+let ROSTER=load(K.r,[]),queue=[],session={},onField=[];
 let charts={},lastMin=-1,lastQ=-1,swapIdx=null,wl=null;
 const nulls=()=>[null,null,null,null,null];
 
@@ -593,7 +595,6 @@ window.addEventListener('beforeunload',e=>{if(queue.length){e.preventDefault();e
  if(!ROSTER.length)toast('Não foi possível carregar o atletas.csv (abre a página via servidor, não diretamente do ficheiro)');
  defSession();fixField();fillInputs();initCharts();renderAll();
  if(session.clockRunning)lock();
- if(queue.length)toast('Jogo anterior recuperado ('+queue.length+' eventos). Usa "Novo jogo" para começar do zero.');
  setInterval(()=>{
   renderLive();updTimes();renderStats();renderSummary();
   if(currentAbsMin()!==lastMin||queue.length!==lastQ)renderCharts();
