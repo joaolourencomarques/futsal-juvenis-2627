@@ -7,50 +7,52 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <style>
-:root{--bg:#f5f7fb;--card:#fff;--text:#222;--accent:#2e86de}
+:root{--bg:#f6f4e9;--card:#fff;--text:#111;--accent:#111;--y:#FFD400;--line:#e3dcae;--bad:#d62828}
 body{font-family:Inter,Arial,sans-serif;margin:10px;background:var(--bg);color:var(--text)}
-h1{font-size:20px;margin:0}
-.card{background:var(--card);padding:12px;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.06);margin-bottom:12px}
+h1{font-size:20px;margin:0;letter-spacing:.2px}
+.card{background:var(--card);padding:14px;border-radius:8px;border:1px solid var(--line);border-top:4px solid var(--y);box-shadow:0 1px 3px rgba(0,0,0,.08);margin-bottom:12px}
 .section-title{font-size:15px;font-weight:800;margin-bottom:8px}
 label{font-weight:700}
-input,select,button{padding:8px;border-radius:8px;border:1px solid #ccc;font-size:15px}
+input,select,button{padding:8px;border-radius:6px;border:1px solid #bdb48a;font-size:15px}
 .row,.manual-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px}
 .players{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
-.player,.slotCard{width:220px;border:1px solid #e6e9ef;padding:10px;border-radius:10px;background:#fff;box-sizing:border-box;display:flex;flex-direction:column;align-items:center}
-.slotCard{border:1px dashed #cfd6e6;background:#fafcff;min-height:300px}
+.player,.slotCard{width:220px;border:1px solid var(--line);padding:10px;border-radius:8px;background:#fff;box-sizing:border-box;display:flex;flex-direction:column;align-items:center}
+.slotCard{border:1px dashed #d4b300;background:#fffdf0;min-height:300px}
+th{background:#111;color:var(--y);font-weight:700}
 .photo,.initials{width:96px;height:96px;border-radius:10px;object-fit:cover;background:#eee;margin-bottom:6px}
 .initials{align-items:center;justify-content:center;font-weight:700;color:#666;font-size:20px}
 .name{font-weight:700;text-align:center}
 .empty{margin-top:40px;color:#8891a7}
-.btn{background:#2e86de;color:#fff;border:none;padding:8px 10px;cursor:pointer;font-weight:600}
-.btn.gray{background:#6e6e6e}.btn.warn{background:#e74c3c}.btn.green{background:#2a9d8f}
-.team-btn{border-radius:8px;padding:10px 12px;color:#fff;font-weight:700;border:none;cursor:pointer;background:#6e6e6e}
-.team-btn.gos{background:#cc3333}.team-btn.def{background:#2a9d8f}
+.btn{background:var(--y);color:#111;border:none;padding:8px 12px;cursor:pointer;font-weight:700}
+.btn:hover,.team-btn:hover,.event-btn:hover{filter:brightness(1.12)}
+.btn.gray{background:#111;color:var(--y)}.btn.warn{background:var(--bad);color:#fff}.btn.green{background:var(--y);color:#111;box-shadow:inset 0 0 0 2px #111}
+.team-btn{border-radius:6px;padding:10px 14px;color:var(--y);font-weight:700;border:none;cursor:pointer;background:#111}
+.team-btn.gos{background:var(--bad);color:#fff}.team-btn.def{background:var(--y);color:#111;box-shadow:inset 0 0 0 2px #111}
 table{width:100%;border-collapse:collapse;margin-top:8px}
-th,td{padding:6px;border-bottom:1px solid #eee;font-size:13px;text-align:left}
-.small,.muted{font-size:13px;color:#666}
+th,td{padding:6px;border-bottom:1px solid #eee6b8;font-size:13px;text-align:left}
+.small,.muted{font-size:13px;color:#4a4a4a}
 #onField{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
 .slotHeader{display:flex;align-items:center;gap:6px;width:100%}
-.slotHeader .badge{font-weight:700;color:#41506b;font-size:13px}
+.slotHeader .badge{font-weight:800;color:#111;font-size:13px}
 .swapBtn{margin-left:auto}
 .evgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;width:100%;margin-top:8px}
 .event-btn{border:none;color:#fff;padding:10px 4px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;min-height:44px;touch-action:manipulation}
 .pos-picker{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
-.pos-btn{border:1px solid #b7c3d6;background:#eef4ff;color:#274060;font-size:12px;border-radius:999px;padding:4px 10px;cursor:pointer}
-.pos-btn.active{background:#2e86de;color:#fff;border-color:#2e86de}
+.pos-btn{border:1px solid #111;background:#fff;color:#111;font-size:12px;border-radius:999px;padding:4px 10px;cursor:pointer}
+.pos-btn.active{background:var(--y);color:#111;border-color:#111;font-weight:700}
 .summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-top:10px}
-.summary-box{background:#f8fbff;border:1px solid #dfe8f8;border-radius:10px;padding:10px}
+.summary-box{background:#fff9cc;border:1px solid #e6c200;border-radius:8px;padding:10px}
 .big{font-size:24px;font-weight:800}
 .chart-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:12px}
-.chart-card{border:1px solid #e7ecf5;border-radius:10px;padding:10px;min-height:320px}
+.chart-card{border:1px solid var(--line);border-radius:10px;padding:10px;min-height:320px}
 canvas{width:100%!important;height:300px!important}
 .header{display:flex;align-items:center;gap:10px;margin-bottom:8px}
 .logo{width:40px;height:40px;object-fit:contain}
-#stickyBar{position:sticky;top:0;z-index:1000;background:var(--accent);color:#fff;padding:8px 14px;display:flex;justify-content:space-between;font-weight:700;font-size:14px;border-radius:0 0 10px 10px;margin-bottom:8px}
-#stickyBar.foul{background:#c0392b}
+#stickyBar{position:sticky;top:0;z-index:1000;background:#111;color:var(--y);padding:9px 14px;display:flex;justify-content:space-between;font-weight:700;font-size:14px;border-radius:0 0 8px 8px;border-bottom:4px solid var(--y);margin-bottom:8px;box-shadow:0 2px 6px rgba(0,0,0,.25)}
+#stickyBar.foul{background:var(--bad);color:#fff}
 #modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);align-items:center;justify-content:center;z-index:9999}
 #modal .panel{background:#fff;padding:16px;border-radius:10px;max-width:720px;width:94%;max-height:90vh;overflow:auto}
-.lrow{display:flex;align-items:center;gap:10px;padding:5px 0;border-bottom:1px solid #eee}
+.lrow{display:flex;align-items:center;gap:10px;padding:5px 0;border-bottom:1px solid #eee6b8}
 #toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:#222;color:#fff;padding:10px 16px;border-radius:8px;z-index:10000;display:none;font-size:14px}
 .tblwrap{overflow-x:auto}
 @media(max-width:900px){.player,.slotCard{width:48%}}
@@ -76,8 +78,8 @@ canvas{width:100%!important;height:300px!important}
 <div id="toast"></div>
 
 <div class="card">
-  <div class="section-title">1. Importação de ficheiros</div>
-  <div class="small">CSV / Excel com as colunas <strong>number</strong>, <strong>photo</strong> (opcional) e <strong>name</strong>.</div>
+  <div class="section-title">1. Elenco (importar só uma vez, ou quando houver alterações)</div>
+  <div class="small">CSV / Excel com as colunas <strong>number</strong>, <strong>photo</strong> (opcional) e <strong>name</strong>. O elenco fica guardado no browser; em cada jogo basta retirar os não convocados.</div>
   <div class="row">
     <input id="fileInput" type="file" accept=".csv,.tsv,.xlsx,.xls">
     <button id="importBtn" class="btn gray" type="button">Importar</button>
@@ -91,6 +93,7 @@ canvas{width:100%!important;height:300px!important}
   <div class="row">
     <button id="saveGameBtn" class="btn green" type="button">Guardar jogo</button>
     <button id="loadGameBtn" class="btn gray" type="button">Abrir jogo</button>
+    <button id="newGameBtn" class="btn warn" type="button">Novo jogo</button>
     <input type="file" id="loadGameFile" accept=".json" style="display:none">
     <span class="muted">Eventos: <span id="queueCount">0</span></span>
   </div>
@@ -123,8 +126,10 @@ canvas{width:100%!important;height:300px!important}
 </div>
 
 <div class="card">
-  <div class="section-title">4. Convocados</div>
+  <div class="section-title">4. Convocados <span id="calledCount" class="small"></span></div>
+  <div class="small">Aparecem todos por defeito. Usa "Retirar" nos que não estão convocados para este jogo.</div>
   <div id="roster" class="players"></div>
+  <div id="absentBox" style="display:none;margin-top:12px"><div class="small"><strong>Não convocados</strong></div><div id="absentList" class="row"></div></div>
 </div>
 
 <div class="card">
@@ -224,7 +229,8 @@ const eventMeta={
  AS_OUT:{label:"Outro",type:8,sigla:"OUT"}
 };
 const PRIORITY=["GOL","RAB","RFB","REC","PER","ASS","FCO","FSO","FAI"];
-const typeColors={1:"#0F4C81",2:"#186FAF",3:"#228ED7",4:"#33A4F0",5:"#57B5F7",6:"#2a9d8f",7:"#4f9bc9",8:"#8fb8d0"};
+const typeColors={1:"#111111",2:"#FFD400",3:"#111111",4:"#333333",5:"#8a6d00",6:"#FFD400",7:"#555555",8:"#999999"};
+const fgOf=bg=>bg==="#FFD400"?"#111":"#fff";
 const posCode={Fixo:'P_FIXO',Ala:'P_ALA',Pivot:'P_PIVOT',GR:'P_GR'};
 const codePos={P_FIXO:'Fixo',P_ALA:'Ala',P_PIVOT:'Pivot',P_GR:'GR'};
 
@@ -242,11 +248,14 @@ function defSession(){
   if(typeof session[o]!=='number'||session[o]<0)session[o]=0;if(session[r]===undefined)session[r]=null}
  if(session.currentPart===undefined)session.currentPart=null;
  if(!session.partMin)session.partMin=20;
+ if(!Array.isArray(session.absent))session.absent=[];
 }
 function fixField(){
  onField=(Array.isArray(onField)?onField:[]).map(x=>!x?null:typeof x==='number'?{number:x,position:null}:{number:x.number,position:x.position||null}).slice(0,5);
  while(onField.length<5)onField.push(null);
 }
+const absent=()=>session.absent||[];
+const called=()=>ROSTER.filter(p=>!absent().includes(p.number));
 const inField=n=>onField.some(s=>s&&s.number===n);
 const ids=['opponent','date','time','location','competition','round','partMin'];
 function fillInputs(){ids.forEach(i=>$(i).value=session[i]??(i==='partMin'?20:''))}
@@ -339,7 +348,7 @@ const playSec=n=>stints(n).t+stintSec(n);
 const count=(n,c)=>queue.filter(e=>e.player_id===n&&e.event_code===c).length;
 const totalOf=c=>queue.filter(e=>e.event_code===c).length;
 function playerStats(){
- return ROSTER.map(p=>({number:p.number,name:p.name,sec:playSec(p.number),goals:count(p.number,'GOL'),ass:count(p.number,'ASS'),rab:count(p.number,'RAB'),rfb:count(p.number,'RFB'),
+ return called().map(p=>({number:p.number,name:p.name,sec:playSec(p.number),goals:count(p.number,'GOL'),ass:count(p.number,'ASS'),rab:count(p.number,'RAB'),rfb:count(p.number,'RFB'),
   rec:count(p.number,'REC'),per:count(p.number,'PER'),fco:count(p.number,'FCO'),fso:count(p.number,'FSO'),def:count(p.number,'DEF')})).sort((a,b)=>b.sec-a.sec);
 }
 
@@ -349,16 +358,20 @@ const initials=n=>String(n).split(' ').map(x=>x[0]||'').join('').slice(0,2).toUp
 const vis=p=>`<img class="photo" src="${esc(photoSrc(p))}" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="initials" style="display:none">${esc(initials(p.name))}</div>`;
 
 function renderRoster(){
- $('roster').innerHTML=ROSTER.map(p=>`<div class="player">${vis(p)}<div class="name">${p.number} - ${esc(p.name)}</div>
+ const list=called(),ab=ROSTER.filter(p=>absent().includes(p.number));
+ $('calledCount').textContent='('+list.length+')';
+ $('roster').innerHTML=list.map(p=>`<div class="player">${vis(p)}<div class="name">${p.number} - ${esc(p.name)}</div>
   <div class="small" style="margin-top:6px">Tempo em jogo: <strong class="playTime" data-player="${p.number}">${fmt(playSec(p.number))}</strong></div>
-  <div style="margin-top:10px"><button class="btn gray addFieldBtn" data-num="${p.number}" type="button">${swapIdx!==null?'Entrar (trocar)':'Entrar'}</button></div></div>`).join('');
+  <div style="margin-top:10px;display:flex;gap:6px"><button class="btn gray addFieldBtn" data-num="${p.number}" type="button">${swapIdx!==null?'Entrar (trocar)':'Entrar'}</button><button class="btn removeBtn" data-num="${p.number}" type="button">Retirar</button></div></div>`).join('');
+ $('absentBox').style.display=ab.length?'block':'none';
+ $('absentList').innerHTML=ab.map(p=>`<span style="white-space:nowrap"><span class="small">${p.number} - ${esc(p.name)}</span> <button class="btn restoreBtn" data-num="${p.number}" type="button">Repor</button></span>`).join('');
 }
 function renderField(){
  fixField();
  $('onField').innerHTML=onField.map((en,i)=>{
   if(!en)return'<div class="slotCard"><div class="empty">Vazio</div></div>';
   const p=ROSTER.find(r=>r.number===en.number)||{number:en.number,name:'?'};
-  return`<div class="slotCard" ${swapIdx===i?'style="border-color:#e67e22;border-style:solid"':''}>
+  return`<div class="slotCard" ${swapIdx===i?'style="border-color:#111;border-style:solid;box-shadow:0 0 0 3px #FFD400"':''}>
   <div class="slotHeader"><span class="badge">Pos ${i+1} — ${en.position||'—'}</span>
    <button class="btn gray swapBtn" data-idx="${i}" type="button">Trocar</button><button class="btn gray slotRemove" data-idx="${i}" type="button">Sair</button></div>
   <div style="margin-top:6px;display:flex;flex-direction:column;align-items:center">${vis(p)}
@@ -366,7 +379,7 @@ function renderField(){
    <div class="small" style="margin-top:6px">Tempo em jogo: <strong class="onFieldTotalTime" data-player="${p.number}">${fmt(playSec(p.number))}</strong></div>
    <div class="small">Na quadra: <strong class="onFieldPartialTime" data-player="${p.number}">${fmt(stintSec(p.number))}</strong></div></div>
   <div class="pos-picker">${['Fixo','Ala','Pivot','GR'].map(x=>`<button class="pos-btn ${en.position===x?'active':''}" data-idx="${i}" data-pos="${x}" type="button">${x}</button>`).join('')}</div>
-  <div class="evgrid">${PRIORITY.map(c=>`<button class="event-btn" data-num="${p.number}" data-code="${c}" title="${eventMeta[c].label}" style="background:${typeColors[eventMeta[c].type]}" type="button">${eventMeta[c].sigla}</button>`).join('')}</div></div>`;
+  <div class="evgrid">${PRIORITY.map(c=>`<button class="event-btn" data-num="${p.number}" data-code="${c}" title="${eventMeta[c].label}" style="background:${typeColors[eventMeta[c].type]};color:${fgOf(typeColors[eventMeta[c].type])}" type="button">${eventMeta[c].sigla}</button>`).join('')}</div></div>`;
  }).join('');
 }
 function renderQueue(){
@@ -385,7 +398,7 @@ function renderQueue(){
 }
 function renderFilter(){
  const cur=$('evFilter').value;
- $('evFilter').innerHTML='<option value="">Todos</option><option value="team">Equipa</option>'+ROSTER.map(p=>`<option value="${p.number}">${p.number} - ${esc(p.name)}</option>`).join('');
+ $('evFilter').innerHTML='<option value="">Todos</option><option value="team">Equipa</option>'+called().map(p=>`<option value="${p.number}">${p.number} - ${esc(p.name)}</option>`).join('');
  $('evFilter').value=cur;
 }
 function renderLive(){
@@ -412,10 +425,10 @@ function currentAbsMin(){const pm=session.partMin||20;return session.currentPart
 function initCharts(){
  if(typeof Chart==='undefined')return;
  const o=t=>({responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},title:{display:true,text:t}},scales:{y:{beginAtZero:true,ticks:{precision:0}}}});
- charts.min=new Chart($('chartPlayerMinutes'),{type:'bar',data:{labels:[],datasets:[{label:'Minutos',data:[]}]},options:o('Tempo em jogo por jogador (min)')});
- charts.act=new Chart($('chartActions'),{type:'bar',data:{labels:['Golos','Remates AB','Remates F','Recup.','Perdas','Assist.','F.Cometidas','F.Sofridas','Defesas GR'],datasets:[{label:'Totais',data:[]}]},options:o('Principais estatísticas do jogo')});
- const oi=o('Intensidade Ofensiva (RAB, RFB, GOL, GOS) vs Defensiva (REC, DEF)');oi.plugins.legend.display=true;
- charts.int=new Chart($('chartIntensity'),{type:'line',data:{labels:[],datasets:[{label:'Ofensiva',data:[],tension:.25},{label:'Defensiva',data:[],tension:.25}]},options:oi});
+ charts.min=new Chart($('chartPlayerMinutes'),{type:'bar',data:{labels:[],datasets:[{label:'Minutos',data:[],backgroundColor:'#FFD400',borderColor:'#111',borderWidth:1.5}]},options:o('Tempo em jogo por jogador (min)')});
+ charts.act=new Chart($('chartActions'),{type:'bar',data:{labels:['Golos','Remates AB','Remates F','Recup.','Perdas','Assist.','F.Cometidas','F.Sofridas','Defesas GR'],datasets:[{label:'Totais',data:[],backgroundColor:'#111'}]},options:o('Principais estatísticas do jogo')});
+ const oi=o('Intensidade Ofensiva (GOL, RAB, RFB) vs Defensiva (DEF, RSO, GOS)');oi.plugins.legend.display=true;
+ charts.int=new Chart($('chartIntensity'),{type:'line',data:{labels:[],datasets:[{label:'Ofensiva',data:[],tension:.25,borderColor:'#111',backgroundColor:'#111'},{label:'Defensiva',data:[],tension:.25,borderColor:'#f2b800',backgroundColor:'#f2b800',borderWidth:3}]},options:oi});
 }
 function renderCharts(){
  if(!charts.min)return;
@@ -423,14 +436,14 @@ function renderCharts(){
  charts.min.data.labels=st.map(s=>s.number+' '+s.name);charts.min.data.datasets[0].data=st.map(s=>+(s.sec/60).toFixed(1));
  charts.act.data.datasets[0].data=['GOL','RAB','RFB','REC','PER','ASS','FCO','FSO','DEF'].map(totalOf);
  const mx=Math.max(currentAbsMin(),...queue.map(abs),1),off=new Array(mx+1).fill(0),def=new Array(mx+1).fill(0);
- queue.forEach(e=>{const m=abs(e);if(['RAB','RFB','GOL','GOS'].includes(e.event_code))off[m]++;if(['REC','DEF'].includes(e.event_code))def[m]++});
+ queue.forEach(e=>{const m=abs(e);if(['GOL','RAB','RFB'].includes(e.event_code))off[m]++;if(['DEF','RSO','GOS'].includes(e.event_code))def[m]++});
  charts.int.data.labels=off.map((_,i)=>i+"'");charts.int.data.datasets[0].data=off;charts.int.data.datasets[1].data=def;
  Object.values(charts).forEach(c=>c.update('none'));
  lastMin=currentAbsMin();lastQ=queue.length;
 }
 function populateManual(){
  const s=$('manualPlayer'),cur=s.value;
- s.innerHTML='<option value="">(Equipa)</option>'+ROSTER.map(p=>`<option value="${p.number}">${p.number} - ${esc(p.name)}</option>`).join('');s.value=cur;
+ s.innerHTML='<option value="">(Equipa)</option>'+called().map(p=>`<option value="${p.number}">${p.number} - ${esc(p.name)}</option>`).join('');s.value=cur;
  const c=$('manualCode');if(!c.options.length){c.innerHTML=Object.keys(eventMeta).filter(k=>k.startsWith('AS_')).map(k=>`<option value="${k}">${esc(eventMeta[k].label)}</option>`).join('');c.value='AS_OUT'}
 }
 function renderAll(){
@@ -475,6 +488,8 @@ function goal(num){
 }
 document.addEventListener('click',e=>{
  const t=e.target;let b;
+ if(b=t.closest('.removeBtn')){const n=+b.dataset.num;if(inField(n)||queue.some(e=>e.player_id===n))return toast('Já tem eventos neste jogo — não pode ser retirado');session.absent=[...absent(),n];saveAll();return}
+ if(b=t.closest('.restoreBtn')){const n=+b.dataset.num;session.absent=absent().filter(x=>x!==n);saveAll();return}
  if(b=t.closest('.addFieldBtn'))return enter(+b.dataset.num);
  if(b=t.closest('.pos-btn')){const i=+b.dataset.idx;if(onField[i]){onField[i].position=b.dataset.pos;add(onField[i].number,posCode[b.dataset.pos]);saveAll()}return}
  if(b=t.closest('.swapBtn')){const i=+b.dataset.idx;swapIdx=swapIdx===i?null:i;renderRoster();renderField();if(swapIdx!==null)toast('Escolhe nos convocados quem entra');return}
@@ -527,10 +542,13 @@ $('importBtn').onclick=async()=>{
   else if(/\.xlsx?$/.test(n)){const wb=XLSX.read(new Uint8Array(await f.arrayBuffer()),{type:'array'});parsed=rowsToRoster(XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,defval:''}))}
   else return toast('Formato não suportado');
   if(!parsed.length)return toast('Nenhuma linha válida encontrada');
-  if((queue.length||session.currentPart)&&!confirm('Importar vai apagar os eventos e o jogo atual. Continuar?'))return;
-  ROSTER=parsed;queue=[];onField=nulls();session={};defSession();fillInputs();saveAll();
+  ROSTER=parsed;session.absent=absent().filter(n=>parsed.some(x=>x.number===n));saveAll();
   $('importStatus').textContent='Importados: '+ROSTER.length+' atletas';inp.value='';
  }catch(err){console.error(err);toast('Erro ao importar: '+err.message)}
+};
+$('newGameBtn').onclick=()=>{
+ if(!confirm('Iniciar um novo jogo? Isto apaga os eventos, o relógio e os dados do jogo atual (guarda primeiro com "Guardar jogo"). O elenco mantém-se e voltam a aparecer todos os convocados.'))return;
+ queue=[];onField=nulls();session={};swapIdx=null;defSession();fillInputs();saveAll();toast('Novo jogo iniciado');
 };
 $('clearConv').onclick=()=>{
  if(!confirm('Remover todos os convocados e eventos?'))return;
