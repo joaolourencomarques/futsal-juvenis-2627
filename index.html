@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
 <meta charset="utf-8"/>
-<title>Futsal — SC BEIRA-MAR | Iniciados e Juvenis 2026/27</title>
+<title>Futsal — SC BEIRA-MAR</title>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
@@ -25,6 +25,8 @@ th{background:#111;color:var(--y);font-weight:700}
 .empty{margin-top:40px;color:#8891a7}
 .btn{background:var(--y);color:#111;border:none;padding:8px 12px;cursor:pointer;font-weight:700}
 .btn:hover,.team-btn:hover,.event-btn:hover{filter:brightness(1.12)}
+.btn[disabled]{opacity:.35;cursor:not-allowed;box-shadow:none!important}
+.btn[disabled]:hover{filter:none}
 .btn.gray{background:#111;color:var(--y)}.btn.warn{background:#fff;color:#111;box-shadow:inset 0 0 0 2px #111}.btn.green{background:var(--y);color:#111;box-shadow:inset 0 0 0 2px #111}
 .team-btn{border-radius:6px;padding:10px 14px;color:var(--y);font-weight:700;border:none;cursor:pointer;background:#111}
 .team-btn.gos{background:#fff;color:#111;box-shadow:inset 0 0 0 2px #111}.team-btn.def{background:var(--y);color:#111;box-shadow:inset 0 0 0 2px #111}
@@ -45,7 +47,18 @@ th,td{padding:6px;border-bottom:1px solid #eee6b8;font-size:13px;text-align:left
 .big{font-size:24px;font-weight:800}
 .chart-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:12px}
 .chart-card{border:1px solid var(--line);border-radius:10px;padding:10px;min-height:320px}
+.dyn-chart-wrap{position:relative;border:1px solid var(--line);border-radius:10px;padding:10px;background:#fff;min-height:220px}
+.dyn-chart-wrap canvas{width:100%!important;height:100%!important}
+.subhead{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-top:18px}
+.subhead:first-child{margin-top:0}
+.subhead strong{font-size:14px}
+.radio-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:0}
+.radio-row label{font-weight:400;font-size:13px;display:flex;align-items:center;gap:4px;white-space:nowrap}
+#radarPicker label{font-weight:400;font-size:13px;display:flex;align-items:center;gap:4px;white-space:nowrap;border:1px solid var(--line);border-radius:999px;padding:3px 10px;background:#fffdf0}
+#radarPicker label:has(input:checked){background:var(--y);border-color:#111;font-weight:700}
 canvas{width:100%!important;height:300px!important}
+#chartRadar{height:430px!important}
+#chartEventsTimeline{height:400px!important}
 .header{display:flex;align-items:center;gap:18px;margin:6px 0 14px}
 .logo{width:clamp(56px,9vw,88px);height:clamp(56px,9vw,88px);object-fit:contain}
 #modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);align-items:center;justify-content:center;z-index:9999}
@@ -71,7 +84,7 @@ canvas{width:100%!important;height:300px!important}
 
 <div class="header">
   <img class="logo" src="images/SCBM.jpg" alt="SC Beira-Mar" onerror="this.style.display='none'">
-  <h1>Futsal SC BEIRA-MAR — Iniciados e Juvenis 2026/27</h1>
+  <h1>Futsal SC BEIRA-MAR — <span id="escalao"></span></h1>
 </div>
 
 <div id="modal"><div class="panel">
@@ -165,6 +178,16 @@ canvas{width:100%!important;height:300px!important}
     <div class="chart-card"><canvas id="chartActions"></canvas></div>
     <div class="chart-card" style="grid-column:span 2"><canvas id="chartIntensity"></canvas></div>
   </div>
+
+  <div class="subhead">
+    <strong>Entradas/Saídas (ENT/SAI)</strong>
+    <div class="radio-row">
+      <label><input type="radio" name="entSaiFilter" value="0" checked> Ambas</label>
+      <label><input type="radio" name="entSaiFilter" value="1"> 1ª Parte</label>
+      <label><input type="radio" name="entSaiFilter" value="2"> 2ª Parte</label>
+    </div>
+  </div>
+  <div id="chartEntSaiWrap" class="dyn-chart-wrap" style="margin-top:8px"><canvas id="chartEntSai"></canvas></div>
 </div>
 
 <div class="card">
@@ -193,9 +216,24 @@ canvas{width:100%!important;height:300px!important}
   </tr></thead><tbody></tbody></table></div>
 </div>
 
+<div class="card">
+  <div class="section-title">8. Análise avançada de eventos</div>
+
+  <div class="subhead">
+    <strong>Comparar jogadores (radar) — escolhe até 10</strong>
+  </div>
+  <div id="radarPicker" class="row" style="margin-top:6px"></div>
+  <div class="chart-card" style="margin-top:8px"><canvas id="chartRadar"></canvas></div>
+
+  <div class="subhead"><strong>Eventos ao longo do tempo</strong></div>
+  <div class="chart-card" style="margin-top:8px;min-height:460px"><canvas id="chartEventsTimeline"></canvas></div>
+</div>
+
 <footer style="text-align:center;margin:18px 0 10px"><button id="legendBtn" class="btn gray" type="button">Legenda de eventos</button></footer>
 
 <script>
+/* ===== ÚNICA LINHA A ALTERAR PARA OUTRO ESCALÃO ===== */
+const ESCALAO='Iniciados e Juvenis 2026/27';
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const pad=n=>String(n).padStart(2,'0');
@@ -234,7 +272,9 @@ const posCode={Fixo:'P_FIXO',Ala:'P_ALA',Pivot:'P_PIVOT',GR:'P_GR'};
 const codePos={P_FIXO:'Fixo',P_ALA:'Ala',P_PIVOT:'Pivot',P_GR:'GR'};
 
 /* ---------- Estado ---------- */
-const K={r:'juvenis_convocados_roster_v2',q:'juvenis_events_queue_v2',s:'juvenis_session_v3',f:'juvenis_onfield_v2'};
+const NS='futsal:'+location.pathname.replace(/[^\w]+/g,'_')+':';
+const K={r:NS+'roster',q:NS+'queue',s:NS+'session',f:NS+'onfield'};
+$('escalao').textContent=ESCALAO;document.title='Futsal — SC BEIRA-MAR | '+ESCALAO;
 const load=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}};
 // Cada vez que a página abre, o jogo começa do zero (só o elenco fica em cache)
 [K.q,K.s,K.f].forEach(k=>{try{localStorage.removeItem(k)}catch{}});
@@ -290,11 +330,25 @@ async function lock(){try{if('wakeLock' in navigator)wl=await navigator.wakeLock
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&session.clockRunning)lock()});
 function startPart(p){
  updSess();
+ fixField();
+
+ // Segurança: uma parte nunca pode começar sem jogadores em campo.
+ if(!onField.some(Boolean)){
+  alert('Não há jogadores em campo. Seleciona pelo menos um atleta antes de iniciar a '+p+'ª parte.');
+  toast('Seleciona jogadores antes de iniciar a '+p+'ª parte');
+  return;
+ }
+
  if((partElapsed(p)>0||queue.some(e=>e.part===p))&&!confirm('Esta parte já foi iniciada. Reiniciar o relógio a zero?'))return;
  commit();
  const k='part'+p;
- delete session[k+'_ended'];session.currentPart=p;session[k+'_start']=new Date().toISOString();session[k+'_elapsed_offset']=0;session[k+'_running_since']=new Date().toISOString();
- session.clockRunning=true;lock();saveAll();toast(p+'ª Parte iniciada');
+ delete session[k+'_ended'];
+ session.currentPart=p;
+ session[k+'_start']=new Date().toISOString();
+ session[k+'_elapsed_offset']=0;
+ session[k+'_running_since']=new Date().toISOString();
+ session.clockRunning=true;
+ lock();saveAll();toast(p+'ª Parte iniciada');
 }
 function pauseClock(){if(!session.clockRunning)return;commit();saveAll();toast('Relógio pausado')}
 function resumeClock(){
@@ -304,8 +358,27 @@ function resumeClock(){
 }
 function endPart(p){
  if(session.currentPart!==p||session['part'+p+'_ended']||(!session.clockRunning&&!partElapsed(p)))return toast('A '+p+'ª parte não está em curso');
- if(!confirm('Terminar a '+p+'ª parte?'))return;
- commit();session['part'+p+'_ended']=true;saveAll();toast(p+'ª parte terminada');
+ if(!confirm('Terminar a '+p+'ª parte? Os jogadores em campo serão retirados automaticamente.'))return;
+
+ // Congela primeiro o relógio no instante final da parte.
+ commit();
+ fixField();
+
+ // Fecha automaticamente o tempo de todos os atletas que ainda estão em campo.
+ // Os eventos SAI ficam registados no minuto/tempo exato do fim da parte.
+ const leaving=onField.filter(Boolean).map(en=>en.number);
+ leaving.forEach(n=>add(n,'SAI'));
+
+ // Campo sempre vazio entre partes e no fim do jogo.
+ onField=nulls();
+ swapIdx=null;
+ session['part'+p+'_ended']=true;
+ session['part'+p+'_running_since']=null;
+ session.clockRunning=false;
+ session.currentPart=null;
+
+ saveAll();
+ toast(p+'ª parte terminada — jogadores retirados e campo limpo');
 }
 
 /* ---------- Eventos ---------- */
@@ -347,6 +420,30 @@ function stints(n){
 const stintSec=n=>{const s=stints(n);return s.e!==null&&inField(n)?Math.max(0,gameElapsed()-s.e):0};
 const playSec=n=>stints(n).t+stintSec(n);
 const count=(n,c)=>queue.filter(e=>e.player_id===n&&e.event_code===c).length;
+function gAbsMin(ev){const pm=session.partMin||20;return(ev.part===2?pm:0)+Number(ev.minute||0)}
+function stintsList(n){
+ const evs=queue.filter(e=>e.player_id===n&&(e.event_code==='ENT'||e.event_code==='SAI')).slice().sort((a,b)=>new Date(a.client_timestamp)-new Date(b.client_timestamp));
+ const list=[];let cur=null;
+ for(const ev of evs){
+  if(ev.event_code==='ENT'&&!cur)cur={startAbs:gAbsMin(ev),startRel:Number(ev.minute||0),part:ev.part};
+  else if(ev.event_code==='SAI'&&cur){list.push({...cur,endAbs:gAbsMin(ev),endRel:Number(ev.minute||0)});cur=null}
+ }
+ if(cur&&inField(n)){
+  const nowRel=session.currentPart===cur.part?Math.floor(partElapsed(cur.part)/60):cur.startRel;
+  list.push({...cur,endAbs:currentAbsMin(),endRel:nowRel});
+ }
+ return list;
+}
+function playSecByPart(n,part){
+ let t=0,e=null;
+ for(const ev of queue){
+  if(ev.player_id!==n||ev.part!==part)continue;
+  if(ev.event_code==='ENT'&&e===null)e=ev.game_marker||0;
+  else if(ev.event_code==='SAI'&&e!==null){t+=Math.max(0,(ev.game_marker||0)-e);e=null}
+ }
+ if(e!==null&&session.currentPart===part&&inField(n))t+=Math.max(0,gameElapsed()-e);
+ return t;
+}
 const totalOf=c=>queue.filter(e=>e.event_code===c).length;
 function playerStats(){
  return called().map(p=>({number:p.number,name:p.name,sec:playSec(p.number),goals:count(p.number,'GOL'),ass:count(p.number,'ASS'),rab:count(p.number,'RAB'),rfb:count(p.number,'RFB'),
@@ -408,6 +505,12 @@ function renderLive(){
  $('livePart').textContent=pt;$('liveElapsedPart').textContent=el;$('liveScore').textContent=st;
  $('liveFouls').textContent=fouls+(fouls>=5?' (livres diretos)':'');
  $('foulBox').classList.toggle('foul',fouls>=5);
+ updatePartButtons();
+}
+function updatePartButtons(){
+ const canEnd=p=>session.currentPart===p&&!session['part'+p+'_ended']&&(session.clockRunning||partElapsed(p)>0);
+ $('endPart1').disabled=!canEnd(1);
+ $('endPart2').disabled=!canEnd(2);
 }
 function renderStats(){
  document.querySelector('#playerStatsTable tbody').innerHTML=playerStats().map(s=>`<tr><td>${s.number}</td><td>${esc(s.name)}</td><td>${fmt(s.sec)}</td><td>${s.goals}</td><td>${s.ass}</td><td>${s.rab}</td><td>${s.rfb}</td><td>${s.rec}</td><td>${s.per}</td><td>${s.fco}</td><td>${s.fso}</td><td>${s.def}</td></tr>`).join('');
@@ -423,22 +526,213 @@ function updTimes(){
  document.querySelectorAll('.onFieldPartialTime').forEach(el=>el.textContent=fmt(stintSec(+el.dataset.player)));
 }
 function currentAbsMin(){const pm=session.partMin||20;return session.currentPart===2?pm+Math.floor(partElapsed(2)/60):Math.floor(partElapsed(1)/60)}
+const EV_CATS=['Entradas/Saídas','Golos','Remates','Recuperações/Perdas','Faltas','Defesa do GR','Desconto de tempo / Pausa'];
+const EV_CAT_GAP=2.0;
+const EV_CAT_POS=Object.fromEntries(EV_CATS.map((c,i)=>[c,(EV_CATS.length-1-i)*EV_CAT_GAP]));
+const EV_CAT_OF={ENT:'Entradas/Saídas',SAI:'Entradas/Saídas',GOL:'Golos',GOS:'Golos',RAB:'Remates',RFB:'Remates',RSO:'Remates',REC:'Recuperações/Perdas',PER:'Recuperações/Perdas',FCO:'Faltas',FSO:'Faltas',DEF:'Defesa do GR',DT:'Desconto de tempo / Pausa'};
+const TIMELINE_CODES=['ENT','SAI','GOL','GOS','RAB','RFB','RSO','REC','PER','FCO','FSO','DEF','DT'];
+
+/* Sublinha preferencial dentro de cada categoria: positivo = acima; negativo = abaixo. */
+const TIMELINE_Y_BASE={
+ ENT:0.36,SAI:-0.36,
+ GOL:0.34,GOS:-0.34,
+ RAB:0.46,RFB:0,RSO:-0.46,
+ REC:0.34,PER:-0.34,
+ FCO:0.34,FSO:-0.34,
+ DEF:0,DT:0
+};
+function duplicateYOffset(idx){
+ const seq=[0,0.14,-0.14,0.28,-0.28,0.42,-0.42];
+ return seq[idx] ?? (idx%2?0.56:-0.56);
+}
+const TIMELINE_STYLE={
+ ENT:{label:'Entrada',bg:'#FFD400',border:'#111111',pointStyle:'triangle',rotation:0},
+ SAI:{label:'Saída',bg:'#111111',border:'#111111',pointStyle:'triangle',rotation:180},
+ GOL:{label:'Golo marcado',bg:'#FFD400',border:'#111111',pointStyle:'circle',rotation:0},
+ GOS:{label:'Golo sofrido',bg:'#111111',border:'#111111',pointStyle:'circle',rotation:0},
+ RAB:{label:'Remate à baliza',bg:'#FFD400',border:'#111111',pointStyle:'triangle',rotation:90},
+ RFB:{label:'Remate fora',bg:'#FFFFFF',border:'#111111',pointStyle:'crossRot',rotation:0},
+ RSO:{label:'Remate sofrido',bg:'#111111',border:'#111111',pointStyle:'triangle',rotation:270},
+ REC:{label:'Recuperação',bg:'#FFD400',border:'#111111',pointStyle:'rectRounded',rotation:0},
+ PER:{label:'Perda',bg:'#111111',border:'#111111',pointStyle:'rectRounded',rotation:0},
+ FCO:{label:'Falta cometida',bg:'#111111',border:'#111111',pointStyle:'rectRot',rotation:0},
+ FSO:{label:'Falta sofrida',bg:'#FFD400',border:'#111111',pointStyle:'rectRot',rotation:0},
+ DEF:{label:'Defesa do GR',bg:'#FFD400',border:'#111111',pointStyle:'star',rotation:0},
+ DT:{label:'Pausa / desconto de tempo',bg:'#FFFFFF',border:'#111111',pointStyle:'cross',rotation:0}
+};
+const RADAR_STYLES=[
+ {line:'#FFD400',fill:'rgba(255,212,0,.12)',point:'#FFD400',dash:[]},
+ {line:'#111111',fill:'rgba(17,17,17,.06)',point:'#111111',dash:[]},
+ {line:'#C7A600',fill:'rgba(199,166,0,.09)',point:'#C7A600',dash:[8,3]},
+ {line:'#555555',fill:'rgba(85,85,85,.06)',point:'#555555',dash:[8,3]},
+ {line:'#FFE66A',fill:'rgba(255,230,106,.12)',point:'#FFE66A',dash:[3,3]},
+ {line:'#333333',fill:'rgba(51,51,51,.05)',point:'#333333',dash:[3,3]},
+ {line:'#E6C200',fill:'rgba(230,194,0,.09)',point:'#E6C200',dash:[12,3]},
+ {line:'#888888',fill:'rgba(136,136,136,.05)',point:'#888888',dash:[12,3]},
+ {line:'#FFF1A8',fill:'rgba(255,241,168,.14)',point:'#FFF1A8',dash:[6,2,2,2]},
+ {line:'#7A6500',fill:'rgba(122,101,0,.07)',point:'#7A6500',dash:[2,2]}
+];
+let radarSel=new Set();
+
+const halfTimeLinePlugin={
+ id:'halfTimeLine',
+ afterDraw(chart){
+  const{ctx,chartArea:{top,bottom},scales:{x}}=chart,pm=session.partMin||20;
+  const xp=x.getPixelForValue(pm);
+  ctx.save();ctx.strokeStyle='#111';ctx.lineWidth=2;ctx.setLineDash([5,4]);ctx.beginPath();ctx.moveTo(xp,top);ctx.lineTo(xp,bottom);ctx.stroke();ctx.setLineDash([]);
+  ctx.fillStyle='#111';ctx.font='11px Inter,Arial,sans-serif';ctx.textAlign='center';ctx.textBaseline='top';
+  ctx.fillText('1ª Parte',(x.getPixelForValue(0)+xp)/2,top+2);
+  ctx.fillText('2ª Parte',(xp+x.getPixelForValue(x.max))/2,top+2);
+  ctx.restore();
+ }
+};
+
 function initCharts(){
  if(typeof Chart==='undefined')return;
  const o=t=>({responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},title:{display:true,text:t}},scales:{y:{beginAtZero:true,ticks:{precision:0}}}});
- charts.min=new Chart($('chartPlayerMinutes'),{type:'bar',data:{labels:[],datasets:[{label:'Minutos',data:[],backgroundColor:'#FFD400',borderColor:'#111',borderWidth:1.5}]},options:o('Tempo em jogo por jogador (min)')});
+ charts.min=new Chart($('chartPlayerMinutes'),{type:'bar',data:{labels:[],datasets:[
+   {label:'1ª Parte',data:[],backgroundColor:'#111',borderColor:'#111',borderWidth:1},
+   {label:'2ª Parte',data:[],backgroundColor:'#FFD400',borderColor:'#111',borderWidth:1}
+  ]},options:{responsive:true,maintainAspectRatio:false,
+   plugins:{legend:{display:true,position:'top'},title:{display:true,text:'Tempo em jogo por jogador (min)'}},
+   scales:{x:{stacked:true},y:{stacked:true,beginAtZero:true,ticks:{precision:0}}}}});
  charts.act=new Chart($('chartActions'),{type:'bar',data:{labels:['Golos','Remates AB','Remates F','Recup.','Perdas','Assist.','F.Cometidas','F.Sofridas','Defesas GR'],datasets:[{label:'Totais',data:[],backgroundColor:'#111'}]},options:o('Principais estatísticas do jogo')});
  const oi=o('Intensidade Ofensiva (GOL, RAB, RFB) vs Defensiva (DEF, RSO, GOS)');oi.plugins.legend.display=true;
  charts.int=new Chart($('chartIntensity'),{type:'line',data:{labels:[],datasets:[{label:'Ofensiva',data:[],tension:.25,borderColor:'#111',backgroundColor:'#111'},{label:'Defensiva',data:[],tension:.25,borderColor:'#f2b800',backgroundColor:'#f2b800',borderWidth:3}]},options:oi});
+
+ charts.entsai=new Chart($('chartEntSai'),{type:'bar',data:{labels:[],datasets:[]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+  plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>{const v=c.raw;return Array.isArray(v)?`${v[0]}' – ${v[1]}'`:''}}}},
+  scales:{x:{min:0,title:{display:true,text:'Minuto'}},y:{stacked:true,ticks:{font:{size:10}}}}}});
+
+ charts.radar=new Chart($('chartRadar'),{type:'radar',data:{labels:['Golos','Assist.','RAB','RFB','REC','PER','FCO','FSO','DEF'],datasets:[]},
+  options:{responsive:true,maintainAspectRatio:false,
+   plugins:{
+    legend:{display:true,position:'bottom',labels:{usePointStyle:true,boxWidth:10,padding:14,color:'#111',font:{size:11}}},
+    title:{display:true,text:'Comparação de jogadores',color:'#111',font:{size:14,weight:'bold'}}
+   },
+   scales:{r:{beginAtZero:true,angleLines:{color:'rgba(17,17,17,.16)'},grid:{color:'rgba(255,212,0,.35)'},pointLabels:{color:'#111',font:{size:11,weight:'bold'}},ticks:{precision:0,color:'#111',backdropColor:'#fff9cc'}}}}});
+
+ charts.evTimeline=new Chart($('chartEventsTimeline'),{type:'scatter',data:{datasets:[]},
+  options:{responsive:true,maintainAspectRatio:false,
+   layout:{padding:{left:8,right:18,top:4,bottom:4}},
+   plugins:{
+    legend:{position:'bottom',labels:{usePointStyle:true,boxWidth:12,padding:14,color:'#111',font:{size:10}}},
+    title:{display:true,text:'Eventos ao longo do jogo',color:'#111',font:{size:14,weight:'bold'}},
+    tooltip:{callbacks:{label:c=>`${c.dataset.label} — ${c.raw.minute}'`}}
+   },
+   scales:{
+    x:{type:'linear',min:0,title:{display:true,text:'Minuto',color:'#111',font:{weight:'bold'}},ticks:{color:'#111'},grid:{color:'rgba(17,17,17,.08)'}},
+    y:{type:'linear',min:-0.9,max:(EV_CATS.length-1)*EV_CAT_GAP+0.9,
+       ticks:{stepSize:EV_CAT_GAP,autoSkip:false,padding:10,color:'#111',font:{size:11,weight:'bold'},callback:v=>{
+        const idx=Math.round(Number(v)/EV_CAT_GAP);
+        const catIdx=(EV_CATS.length-1)-idx;
+        return Math.abs(Number(v)-idx*EV_CAT_GAP)<0.01 && catIdx>=0 && catIdx<EV_CATS.length ? EV_CATS[catIdx] : '';
+       }},
+       grid:{color:ctx=>{
+        const v=Number(ctx.tick?.value);
+        const q=Math.round(v/EV_CAT_GAP);
+        return Math.abs(v-q*EV_CAT_GAP)<0.01?'rgba(255,212,0,.30)':'rgba(0,0,0,0)';
+       }}}
+   }},
+  plugins:[halfTimeLinePlugin]});
 }
+
+function renderRadarPicker(){
+ const wrap=$('radarPicker');if(!wrap)return;
+ const list=called();
+ radarSel=new Set([...radarSel].filter(n=>list.some(p=>p.number===n)));
+ wrap.innerHTML=list.map(p=>`<label><input type="checkbox" class="radarChk" value="${p.number}" ${radarSel.has(p.number)?'checked':''}> ${p.number} - ${esc(p.name)}</label>`).join('')||'<span class="small">Sem convocados</span>';
+}
+function updateEntSai(){
+ if(!charts.entsai)return;
+ const sel=document.querySelector('input[name=entSaiFilter]:checked'),filter=sel?+sel.value:0;
+ const players=called();
+ const raw=players.map(p=>stintsList(p.number).filter(s=>!filter||s.part===filter));
+ const maxStints=Math.max(0,...raw.map(l=>l.length));
+ const datasets=[];
+ for(let i=0;i<maxStints;i++){
+  datasets.push({
+   data:raw.map(l=>{const s=l[i];if(!s)return null;return filter?[s.startRel,s.endRel]:[s.startAbs,s.endAbs]}),
+   backgroundColor:'#FFD400',borderColor:'#111',borderWidth:1,
+   borderSkipped:false,borderRadius:2,barPercentage:.9,categoryPercentage:.92
+  });
+ }
+ charts.entsai.data.labels=players.map(p=>p.number+' '+p.name);
+ charts.entsai.data.datasets=datasets.length?datasets:[{data:players.map(()=>null)}];
+ charts.entsai.options.scales.x.max=filter?(session.partMin||20):undefined;
+ $('chartEntSaiWrap').style.height=Math.max(140,22+players.length*24)+'px';
+ charts.entsai.resize();charts.entsai.update('none');
+}
+function updateRadar(){
+ if(!charts.radar)return;
+ charts.radar.data.datasets=[...radarSel].map((n,i)=>{
+  const p=ROSTER.find(r=>r.number===n)||{number:n,name:'?'};
+  const s=RADAR_STYLES[i%RADAR_STYLES.length];
+  return{
+   label:p.number+' '+p.name,
+   data:[count(n,'GOL'),count(n,'ASS'),count(n,'RAB'),count(n,'RFB'),count(n,'REC'),count(n,'PER'),count(n,'FCO'),count(n,'FSO'),count(n,'DEF')],
+   borderColor:s.line,backgroundColor:s.fill,borderWidth:2,borderDash:s.dash,
+   pointBackgroundColor:s.point,pointBorderColor:'#111',pointBorderWidth:1,pointRadius:3,pointHoverRadius:5
+  };
+ });
+ charts.radar.update('none');
+}
+function updateEventsTimeline(){
+ if(!charts.evTimeline)return;
+ const byCode={};
+ const sameCodeAtMinute={};
+ queue.slice().sort((a,b)=>gAbsMin(a)-gAbsMin(b)).forEach(ev=>{
+  const code=ev.event_code,cat=EV_CAT_OF[code];
+  if(!cat)return;
+  const minute=gAbsMin(ev);
+  const key=`${code}|${minute}`;
+  const dup=sameCodeAtMinute[key]||0;
+  sameCodeAtMinute[key]=dup+1;
+
+  const base=TIMELINE_Y_BASE[code]||0;
+  let extra=duplicateYOffset(dup);
+  // Mantém cada tipo na sua metade da linha (ex.: entradas acima, saídas abaixo).
+  if(base>0)extra=Math.max(-0.24,extra);
+  if(base<0)extra=Math.min(0.24,extra);
+  const y=EV_CAT_POS[cat]+base+extra;
+
+  // Em coincidências muito numerosas, um micro-desfasamento horizontal evita nova sobreposição.
+  const x=minute+(dup>6?(dup-6)*0.045:0);
+  (byCode[code]=byCode[code]||[]).push({x,y,minute});
+ });
+ charts.evTimeline.data.datasets=TIMELINE_CODES.filter(code=>byCode[code]?.length).map(code=>{
+  const s=TIMELINE_STYLE[code]||{label:eventMeta[code]?.label||code,bg:'#FFD400',border:'#111',pointStyle:'circle',rotation:0};
+  return{
+   label:s.label,data:byCode[code],
+   backgroundColor:s.bg,borderColor:s.border,borderWidth:2,
+   pointStyle:s.pointStyle,pointRotation:s.rotation||0,pointRadius:7,pointHoverRadius:9,pointBorderWidth:2
+  };
+ });
+ charts.evTimeline.options.scales.x.max=Math.max((session.partMin||20)*2,currentAbsMin());
+ charts.evTimeline.update('none');
+}
+document.addEventListener('change',e=>{
+ if(e.target.classList.contains('radarChk')){
+  const n=+e.target.value;
+  if(e.target.checked){
+   if(radarSel.size>=10){e.target.checked=false;toast('Escolhe no máximo 10 jogadores');return}
+   radarSel.add(n);
+  }else radarSel.delete(n);
+  updateRadar();return;
+ }
+ if(e.target.name==='entSaiFilter')return updateEntSai();
+});
 function renderCharts(){
  if(!charts.min)return;
  const st=playerStats(),pm=session.partMin||20,abs=e=>(e.part===2?pm:0)+Number(e.minute||0);
- charts.min.data.labels=st.map(s=>s.number+' '+s.name);charts.min.data.datasets[0].data=st.map(s=>+(s.sec/60).toFixed(1));
+ charts.min.data.labels=st.map(s=>s.number+' '+s.name);
+ charts.min.data.datasets[0].data=st.map(s=>+(playSecByPart(s.number,1)/60).toFixed(1));
+ charts.min.data.datasets[1].data=st.map(s=>+(playSecByPart(s.number,2)/60).toFixed(1));
  charts.act.data.datasets[0].data=['GOL','RAB','RFB','REC','PER','ASS','FCO','FSO','DEF'].map(totalOf);
  const mx=Math.max(currentAbsMin(),...queue.map(abs),1),off=new Array(mx+1).fill(0),def=new Array(mx+1).fill(0);
  queue.forEach(e=>{const m=abs(e);if(['GOL','RAB','RFB'].includes(e.event_code))off[m]++;if(['DEF','RSO','GOS'].includes(e.event_code))def[m]++});
  charts.int.data.labels=off.map((_,i)=>i+"'");charts.int.data.datasets[0].data=off;charts.int.data.datasets[1].data=def;
+ updateEntSai();updateRadar();updateEventsTimeline();
  Object.values(charts).forEach(c=>c.update('none'));
  lastMin=currentAbsMin();lastQ=queue.length;
 }
@@ -448,7 +742,7 @@ function populateManual(){
  const c=$('manualCode');if(!c.options.length){c.innerHTML=Object.keys(eventMeta).filter(k=>k.startsWith('AS_')).map(k=>`<option value="${k}">${esc(eventMeta[k].label)}</option>`).join('');c.value='AS_OUT'}
 }
 function renderAll(){
- renderRoster();renderField();renderFilter();renderQueue();populateManual();renderLive();renderSummary();renderStats();renderCharts();
+ renderRoster();renderField();renderFilter();renderQueue();populateManual();renderRadarPicker();renderLive();renderSummary();renderStats();renderCharts();
 }
 
 /* ---------- Modal ---------- */
