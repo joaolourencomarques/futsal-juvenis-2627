@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
 <meta charset="utf-8"/>
-<title>Futsal — SC BEIRA-MAR</title>
+<title>Futsal — SC BEIRAMAR</title>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
@@ -83,8 +83,8 @@ canvas{width:100%!important;height:300px!important}
 <body>
 
 <div class="header">
-  <img class="logo" src="images/SCBM.jpg" alt="SC Beira-Mar" onerror="this.style.display='none'">
-  <h1>Futsal SC BEIRA-MAR — <span id="escalao"></span></h1>
+  <img class="logo" src="images/SCBM.jpg" alt="SC BeiraMar" onerror="this.style.display='none'">
+  <h1>Futsal SC BEIRAMAR — <span id="escalao"></span></h1>
 </div>
 
 <div id="modal"><div class="panel">
@@ -274,7 +274,7 @@ const codePos={P_FIXO:'Fixo',P_ALA:'Ala',P_PIVOT:'Pivot',P_GR:'GR'};
 /* ---------- Estado ---------- */
 const NS='futsal:'+location.pathname.replace(/[^\w]+/g,'_')+':';
 const K={r:NS+'roster',q:NS+'queue',s:NS+'session',f:NS+'onfield'};
-$('escalao').textContent=ESCALAO;document.title='Futsal — SC BEIRA-MAR | '+ESCALAO;
+$('escalao').textContent=ESCALAO;document.title='Futsal — SC BEIRAMAR | '+ESCALAO;
 const load=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}};
 // Cada vez que a página abre, o jogo começa do zero (só o elenco fica em cache)
 [K.q,K.s,K.f].forEach(k=>{try{localStorage.removeItem(k)}catch{}});
