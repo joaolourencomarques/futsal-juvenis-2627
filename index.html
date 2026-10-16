@@ -2,9 +2,8 @@
 <html lang="pt">
 <head>
 <meta charset="utf-8"/>
-<title>Futsal — SC BEIRAMAR</title>
+<title>Futsal — SC BEIRA-MAR</title>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <style>
 :root{--bg:#f6f4e9;--card:#fff;--text:#111;--accent:#111;--y:#FFD400;--line:#e3dcae;--bad:#d62828}
@@ -20,6 +19,20 @@ input,select,button{padding:8px;border-radius:6px;border:1px solid #bdb48a;font-
 .slotCard{border:1px dashed #d4b300;background:#fffdf0;min-height:300px}
 th{background:#111;color:var(--y);font-weight:700}
 .photo,.initials{width:96px;height:96px;border-radius:10px;object-fit:cover;background:#eee;margin-bottom:6px}
+#roster{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}
+#roster .player{width:auto;padding:8px 6px;gap:2px;justify-content:flex-start}
+#roster .photo,#roster .initials{width:64px;height:64px;margin:0 0 4px;border-radius:8px;font-size:16px}
+#roster .pinfo{display:flex;flex-direction:column;align-items:center;width:100%;line-height:1.25}
+#roster .pinfo .name{font-size:13px;max-width:100%;text-align:center;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;min-height:2.5em;display:-webkit-box}
+#roster .pinfo .small{font-size:11px}
+#roster .pbtns{display:flex;gap:4px;margin-top:6px}
+#roster .btn{padding:4px 9px;font-size:12px}
+#roster .btn[disabled]{opacity:.3}
+#roster.swap .player{border-color:#111;box-shadow:0 0 0 2px #FFD400}
+#roster .player.guest{border-style:dashed;border-color:#b38f00;background:#fffdf0}
+.gchip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;padding:3px 4px 3px 3px;background:#fffdf0;cursor:pointer;font-size:13px}
+.gchip img,.gchip .gi{width:26px;height:26px;border-radius:50%;object-fit:cover;background:#eee;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#666}
+.gchip .gx{border:none;background:none;cursor:pointer;font-size:14px;color:#777;padding:0 4px}
 .initials{align-items:center;justify-content:center;font-weight:700;color:#666;font-size:20px}
 .name{font-weight:700;text-align:center}
 .empty{margin-top:40px;color:#8891a7}
@@ -66,40 +79,48 @@ canvas{width:100%!important;height:300px!important}
 .clockbar{position:sticky;top:0;z-index:1000;background:#fff;border:1px solid var(--line);border-bottom:4px solid var(--y);border-radius:0 0 8px 8px;padding:8px 10px;margin-bottom:12px;box-shadow:0 3px 8px rgba(0,0,0,.2)}
 .clockbar .row{margin-top:0}
 .clockbar .btn{padding:6px 10px;font-size:14px}
-.clockbar .summary-grid{grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px}
+.clockbar .summary-grid{grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:6px;margin-top:8px}
 .clockbar .summary-box{padding:4px 8px}
 .clockbar .big{font-size:20px}
+#undoBtn{margin-left:auto;font-size:15px;padding:8px 16px}
 .summary-box.foul{background:#d62828;border-color:#d62828}
 .summary-box.foul .small,.summary-box.foul .big{color:#fff}
 @media(max-width:520px){.clockbar .summary-grid{grid-template-columns:repeat(2,1fr)}}
 .lrow{display:flex;align-items:center;gap:10px;padding:5px 0;border-bottom:1px solid #eee6b8}
+.goalsGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr)) minmax(0,2.4fr);gap:10px;margin-top:10px;align-items:stretch}
+.giLists{display:contents}
+@media(max-width:900px){.goalsGrid{grid-template-columns:minmax(140px,.8fr) minmax(0,2fr)}.giLists{display:flex;flex-direction:column;gap:10px}}
+@media(max-width:560px){.goalsGrid{grid-template-columns:1fr}}
+.giForma{border:1px solid #111;background:#fff;color:#111;font-size:13px;border-radius:999px;padding:6px 12px;cursor:pointer}
+.giForma.active{background:var(--y);font-weight:700}
 #toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:#222;color:#fff;padding:10px 16px;border-radius:8px;z-index:10000;display:none;font-size:14px}
 .tblwrap{overflow-x:auto}
-@media(max-width:900px){.player,.slotCard{width:48%}}
+@media(max-width:900px){.player,.slotCard{width:48%}#roster .player{width:auto}}
+@media(max-width:520px){#roster{grid-template-columns:repeat(auto-fill,minmax(110px,1fr))}}
 @media(max-width:700px){.chart-grid{grid-template-columns:1fr}.chart-card{grid-column:auto!important}}
-@media(max-width:520px){.player,.slotCard{width:100%}input,select,button{font-size:16px}}
+@media(max-width:520px){.player,.slotCard{width:100%}#roster .player{width:auto}input,select,button{font-size:16px}}
 </style>
 </head>
 <body>
 
 <div class="header">
-  <img class="logo" src="images/SCBM.jpg" alt="SC BeiraMar" onerror="this.style.display='none'">
-  <h1>Futsal SC BEIRAMAR — <span id="escalao"></span></h1>
+  <img class="logo" src="images/SCBM.jpg" alt="SC Beira-Mar" onerror="this.style.display='none'">
+  <h1>Futsal SC BEIRA-MAR — <span id="escalao"></span></h1>
 </div>
 
 <div id="modal"><div class="panel">
   <h3 id="mTitle" style="margin-top:0"></h3>
   <div id="mBody"></div>
-  <div style="text-align:right;margin-top:12px"><button id="mClose" class="btn gray" type="button">Fechar</button></div>
+  <div style="text-align:right;margin-top:12px"><button id="mClose" class="btn gray" title="Fecha esta janela" type="button">Fechar</button></div>
 </div></div>
 <div id="toast"></div>
 
 <div class="card">
   <div class="section-title">1. Gravação de ficheiros</div>
   <div class="row">
-    <button id="saveGameBtn" class="btn green" type="button">Guardar jogo</button>
-    <button id="loadGameBtn" class="btn gray" type="button">Abrir jogo</button>
-    <button id="newGameBtn" class="btn warn" type="button">Novo jogo</button>
+    <button id="saveGameBtn" class="btn green" title="Descarrega o jogo (eventos, sessão e convocados) num ficheiro .json" type="button">Guardar jogo</button>
+    <button id="loadGameBtn" class="btn gray" title="Carrega um jogo guardado anteriormente (.json)" type="button">Abrir jogo</button>
+    <button id="newGameBtn" class="btn warn" title="Apaga os eventos e começa um jogo novo" type="button">Novo jogo</button>
     <input type="file" id="loadGameFile" accept=".json" style="display:none">
     <span class="muted">Eventos: <span id="queueCount">0</span></span>
   </div>
@@ -108,36 +129,43 @@ canvas{width:100%!important;height:300px!important}
 <div class="card">
   <div class="section-title">2. Informação do jogo</div>
   <div class="row">
-    <input id="opponent" placeholder="Equipa adversária" style="width:200px">
+    <input id="opponent" title="Nome da equipa adversária" placeholder="Equipa adversária" style="width:200px">
     <input id="date" type="date">
     <input id="time" type="time">
     <input id="location" placeholder="Local" style="width:200px">
     <input id="competition" placeholder="Competição">
     <input id="round" placeholder="Jornada" style="width:90px">
-    <label class="small">Duração da parte (min) <input id="partMin" type="number" min="1" max="60" value="20" style="width:70px"></label>
+    <input id="recorder" placeholder="Registado por" title="Quem regista este jogo (fica gravado no ficheiro do jogo)" style="width:150px">
+    <label class="small" title="Duração de cada parte, usada nas escalas dos gráficos">Duração da parte (min) <input id="partMin" type="number" min="1" max="60" value="25" style="width:70px"></label>
   </div>
 </div>
 
 <div class="clockbar">
   <div class="row">
-    <button id="startPart" class="btn green" type="button">Início 1ª Parte</button>
-    <button id="endPart1" class="btn warn" type="button">Fim 1ª Parte</button>
-    <button id="startPart2" class="btn green" type="button">Início 2ª Parte</button>
-    <button id="endPart2" class="btn warn" type="button">Fim 2ª Parte</button>
-    <button id="pauseClock" class="btn gray" type="button">Pausar relógio</button>
-    <button id="resumeClock" class="btn" type="button">Retomar relógio</button>
+    <button id="startPart" class="btn green" title="Arranca o relógio da 1ª parte" type="button">Início 1ª Parte</button>
+    <button id="endPart1" class="btn warn" title="Termina a 1ª parte e pára o relógio" type="button">Fim 1ª Parte</button>
+    <button id="startPart2" class="btn green" title="Arranca o relógio da 2ª parte" type="button">Início 2ª Parte</button>
+    <button id="endPart2" class="btn warn" title="Termina a 2ª parte e o jogo" type="button">Fim 2ª Parte</button>
+    <button id="pauseClock" class="btn gray" title="Pausa o relógio (desconta o tempo parado)" type="button">Pausar relógio</button>
+    <button id="resumeClock" class="btn" title="Retoma o relógio depois de uma pausa" type="button">Retomar relógio</button>
+    <button id="undoBtn" class="btn gray" title="Desfaz o último toque registado em campo (evento, troca, entrada ou saída)" type="button">↶ Anular última ação</button>
   </div>
   <div class="summary-grid">
     <div class="summary-box"><div class="small">Parte atual</div><div id="livePart" class="big">—</div></div>
     <div class="summary-box"><div class="small">Tempo decorrido</div><div id="liveElapsedPart" class="big">00:00</div></div>
     <div class="summary-box"><div class="small">Resultado</div><div id="liveScore" class="big">0 - 0</div></div>
-    <div class="summary-box" id="foulBox"><div class="small">Faltas da parte</div><div id="liveFouls" class="big">0</div></div>
+    <div class="summary-box" id="foulBox" title="Faltas da parte atual: sofridas (FSO) - cometidas (FCO). A partir da 5.ª falta cometida, cada nova falta dá livre direto ao adversário"><div class="small">Faltas da parte <span style="font-weight:400">(sofridas - cometidas)</span></div><div id="liveFouls" class="big">0 - 0</div><div id="liveFoulsNote" class="small"></div></div>
   </div>
 </div>
 
 <div class="card">
-  <div class="section-title">3. Convocados <span id="calledCount" class="small"></span></div>
-  <div class="small">Aparecem todos por defeito. Usa "Retirar" nos que não estão convocados para este jogo.</div>
+  <div class="row" style="justify-content:space-between;margin-top:0">
+    <div class="section-title" style="margin:0" title="Aparecem todos por defeito. Usa Retirar nos que não estão convocados para este jogo">3. Convocados <span id="calledCount" class="small"></span></div>
+    <div class="row" style="margin:0;gap:6px">
+    <button id="guestBtn" class="btn" type="button" title="Junta a este jogo um atleta de outro escalão (número, nome e foto). Fica guardado para os próximos jogos" style="padding:4px 10px;font-size:13px">Novo Atleta</button>
+    <button id="rosterToggle" class="btn warn" type="button" title="Mostra ou esconde a lista de convocados (aparece sempre ao fazer uma troca)" style="padding:4px 10px;font-size:13px">Esconder</button>
+    </div>
+  </div>
   <div id="roster" class="players"></div>
   <div id="absentBox" style="display:none;margin-top:12px"><div class="small"><strong>Não convocados</strong></div><div id="absentList" class="row"></div></div>
 </div>
@@ -145,33 +173,41 @@ canvas{width:100%!important;height:300px!important}
 <div class="card">
   <div class="row" style="justify-content:space-between;margin-top:0">
     <div class="section-title" style="margin:0">4. Jogadores em campo</div>
-    <button id="clearSlots" class="btn gray" type="button">Limpar Campo</button>
+    <div class="row" style="margin:0 0 0 auto;justify-content:flex-end">
+      <button id="clearSlots" class="btn gray" type="button" title="Tira todos os jogadores do campo (regista as saídas)">Limpar Campo</button>
+      <button id="fixSubBtn" class="btn warn" type="button" title="Regista uma entrada/saída que te esqueceste, no minuto em que aconteceu">Corrigir substituição</button>
+      <button id="optsBtn" class="btn warn" type="button" title="Define o que a app pergunta ao registar remates, golos e assistências">⚙ Opções de registo</button>
+    </div>
   </div>
   <div class="row">
-    <button class="team-btn gos" data-team="GOS" type="button">Golo sofrido</button>
-    <button class="team-btn def" data-team="DEF" type="button">Defesa do GR</button>
-    <button class="team-btn" data-team="RSO" type="button">Remate sofrido</button>
+    <button class="team-btn gos" data-team="GOS" type="button" title="Regista um golo sofrido (equipa)">Golo sofrido</button>
+    <button class="team-btn def" data-team="DEF" type="button" title="Regista uma defesa do guarda-redes (conta como ação na nossa área)">Defesa do GR</button>
+    <button class="team-btn" data-team="RSO" type="button" title="Regista um remate sofrido (equipa)">Remate sofrido</button>
   </div>
   <div id="onField"></div>
-  <div class="small" style="margin-top:8px"><strong>Tempo em jogo</strong>: total acumulado | <strong>Na quadra</strong>: entrada atual. Para substituir: "Trocar" no jogador que sai e depois "Entrar" no que entra.</div>
 </div>
 
 <div class="card">
   <div class="section-title">5. Resumo do jogo</div>
-  <div class="summary-grid">
-    <div class="summary-box"><div class="small">Golos marcados</div><div id="sumGoalsFor" class="big">0</div></div>
-    <div class="summary-box"><div class="small">Golos sofridos</div><div id="sumGoalsAgainst" class="big">0</div></div>
-    <div class="summary-box"><div class="small">Remates à baliza</div><div id="sumShotsOn" class="big">0</div></div>
-    <div class="summary-box"><div class="small">Remates fora</div><div id="sumShotsOff" class="big">0</div></div>
-    <div class="summary-box"><div class="small">Recuperações</div><div id="sumRecoveries" class="big">0</div></div>
-    <div class="summary-box"><div class="small">Perdas</div><div id="sumLosses" class="big">0</div></div>
+  <div id="goalsInfo" class="goalsGrid">
+    <div class="giLists">
+      <div class="summary-box" id="giScored"></div>
+      <div class="summary-box" id="giConceded"></div>
+      <div class="summary-box" id="giShots"></div>
+    </div>
+    <div class="summary-box">
+      <div id="mapFilter"></div>
+      <div id="giMap" style="margin-top:8px"></div>
+      <div id="giMapNote" class="small" style="margin-top:4px"></div>
+    </div>
   </div>
   <div class="row" style="justify-content:space-between">
-    <label>Estatísticas automáticas por jogador</label>
-    <button id="exportStatsBtn" class="btn" type="button">Exportar estatísticas CSV</button>
+    <label>Estatísticas automáticas por jogador
+      <select id="statsMode" title="Totais do jogo ou valores normalizados a 40 minutos em campo (só para quem jogou pelo menos 5 min)" style="margin-left:8px;font-weight:400;padding:4px"><option value="tot">Totais</option><option value="p40">Por 40 min</option></select></label>
+    <button id="exportStatsBtn" class="btn" title="Descarrega as estatísticas por jogador em CSV" type="button">Exportar estatísticas CSV</button>
   </div>
   <div class="tblwrap"><table id="playerStatsTable"><thead><tr>
-    <th>#</th><th>Jogador</th><th>Tempo em jogo</th><th>Golos</th><th>Assist.</th><th>RAB</th><th>RFB</th><th>REC</th><th>PER</th><th>FCO</th><th>FSO</th><th>DEF</th>
+    <th title="Número do jogador">#</th><th title="Nome do jogador">Jogador</th><th title="Tempo total em campo">Tempo em jogo</th><th title="Golos marcados">Golos</th><th title="Assistências">Assist.</th><th title="Remates à baliza">RAB</th><th title="Remates fora da baliza">RFB</th><th title="Eficácia de remate: golos ÷ remates totais (GOL + RAB + RFB)">Efic.</th><th title="Recuperações de bola">REC</th><th title="Perdas de bola">PER</th><th title="Faltas cometidas">FCO</th><th title="Faltas sofridas">FSO</th><th title="Defesas do guarda-redes">DEF</th>
   </tr></thead><tbody></tbody></table></div>
   <div class="chart-grid">
     <div class="chart-card"><canvas id="chartPlayerMinutes"></canvas></div>
@@ -182,37 +218,38 @@ canvas{width:100%!important;height:300px!important}
   <div class="subhead">
     <strong>Entradas/Saídas (ENT/SAI)</strong>
     <div class="radio-row">
-      <label><input type="radio" name="entSaiFilter" value="0" checked> Ambas</label>
-      <label><input type="radio" name="entSaiFilter" value="1"> 1ª Parte</label>
-      <label><input type="radio" name="entSaiFilter" value="2"> 2ª Parte</label>
+      <label title="Mostra as duas partes"><input type="radio" name="entSaiFilter" value="0" checked> Ambas</label>
+      <label title="Só a 1ª parte"><input type="radio" name="entSaiFilter" value="1"> 1ª Parte</label>
+      <label title="Só a 2ª parte"><input type="radio" name="entSaiFilter" value="2"> 2ª Parte</label>
     </div>
   </div>
   <div id="chartEntSaiWrap" class="dyn-chart-wrap" style="margin-top:8px"><canvas id="chartEntSai"></canvas></div>
+  <div style="text-align:right;margin-top:6px"><span id="graphTimeNote" class="small muted" style="cursor:help;font-size:16px">ⓘ</span></div>
 </div>
 
 <div class="card">
   <div class="section-title">6. Registo de outros eventos</div>
   <div class="manual-row">
-    <select id="manualPlayer" style="min-width:200px"><option value="">(Equipa)</option></select>
-    <select id="manualCode" style="min-width:300px"></select>
+    <select id="manualPlayer" title="Jogador a quem se atribui o evento (ou equipa)" style="min-width:200px"><option value="">(Equipa)</option></select>
+    <select id="manualCode" title="Tipo de evento a registar" style="min-width:300px"></select>
   </div>
   <div class="manual-row">
-    <select id="manualRating" style="width:160px"><option value="">Sem avaliação</option><option value="1">A melhorar</option><option value="5">Muito Bom</option></select>
-    <input id="manualNote" placeholder="Nota (opcional)" style="flex:1">
+    <select id="manualRating" title="Avaliação do desempenho (opcional)" style="width:160px"><option value="">Sem avaliação</option><option value="1">A melhorar</option><option value="5">Muito Bom</option></select>
+    <input id="manualNote" title="Nota livre associada ao evento (opcional)" placeholder="Nota (opcional)" style="flex:1">
   </div>
-  <div style="text-align:right;margin-top:8px"><button id="manualAdd" class="btn" type="button">Adicionar Evento de Avaliação</button></div>
+  <div style="text-align:right;margin-top:8px"><button id="manualAdd" class="btn" title="Regista o evento escolhido para o jogador (ou equipa) selecionado" type="button">Adicionar Evento de Avaliação</button></div>
 </div>
 
 <div class="card">
   <div class="row" style="justify-content:space-between;margin-top:0">
     <div class="section-title" style="margin:0">7. Registo dos eventos (mais recente primeiro)</div>
     <div class="row" style="margin:0">
-      <select id="evFilter"><option value="">Todos</option></select>
-      <button id="exportBtn" class="btn" type="button">Exportar Eventos CSV</button>
+      <select id="evFilter" title="Filtra a tabela por tipo de evento"><option value="">Todos</option></select>
+      <button id="exportBtn" class="btn" title="Escolhe os tipos de eventos e a parte a exportar em CSV" type="button">Exportar Eventos CSV</button>
     </div>
   </div>
   <div class="tblwrap"><table id="eventsTable"><thead><tr>
-    <th>#</th><th>Min</th><th>Parte</th><th>Player</th><th>Evento</th><th>Sigla</th><th>Avaliação</th><th>Nota</th><th>Hora</th><th></th>
+    <th>#</th><th title="Minuto da parte">Min</th><th title="1ª ou 2ª parte">Parte</th><th title="Jogador">Player</th><th title="Descrição do evento">Evento</th><th title="Sigla do evento">Sigla</th><th title="Avaliação do desempenho">Avaliação</th><th title="Nota livre">Nota</th><th title="Hora real do registo">Hora</th><th></th>
   </tr></thead><tbody></tbody></table></div>
 </div>
 
@@ -229,11 +266,11 @@ canvas{width:100%!important;height:300px!important}
   <div class="chart-card" style="margin-top:8px;min-height:460px"><canvas id="chartEventsTimeline"></canvas></div>
 </div>
 
-<footer style="text-align:center;margin:18px 0 10px"><button id="legendBtn" class="btn gray" type="button">Legenda de eventos</button></footer>
+<footer style="text-align:center;margin:18px 0 10px"><button id="legendBtn" class="btn gray" title="Significado das siglas e guia de utilização da plataforma" type="button">Legenda de eventos e guia de utilização</button></footer>
 
 <script>
 /* ===== ÚNICA LINHA A ALTERAR PARA OUTRO ESCALÃO ===== */
-const ESCALAO='Iniciados e Juvenis 2026/27';
+const ESCALAO='Juvenis 2026/27';
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const pad=n=>String(n).padStart(2,'0');
@@ -273,12 +310,17 @@ const codePos={P_FIXO:'Fixo',P_ALA:'Ala',P_PIVOT:'Pivot',P_GR:'GR'};
 
 /* ---------- Estado ---------- */
 const NS='futsal:'+location.pathname.replace(/[^\w]+/g,'_')+':';
-const K={r:NS+'roster',q:NS+'queue',s:NS+'session',f:NS+'onfield'};
-$('escalao').textContent=ESCALAO;document.title='Futsal — SC BEIRAMAR | '+ESCALAO;
+const K={r:NS+'roster',q:NS+'queue',s:NS+'session',f:NS+'onfield',o:NS+'opts'};
+$('escalao').textContent=ESCALAO;document.title='Futsal — SC BEIRA-MAR | '+ESCALAO;
 const load=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}};
-// Cada vez que a página abre, o jogo começa do zero (só o elenco fica em cache)
-[K.q,K.s,K.f].forEach(k=>{try{localStorage.removeItem(k)}catch{}});
-let ROSTER=load(K.r,[]),queue=[],session={},onField=[];
+// Recarregar a página não pode apagar os eventos. Apenas "Novo jogo" reinicia a sessão.
+let ROSTER=load(K.r,[]),queue=load(K.q,[]),session=load(K.s,{}),onField=load(K.f,[]);
+if(session.clockRunning && [1,2].includes(Number(session.currentPart))){
+ const p=Number(session.currentPart),start=Date.parse(session['part'+p+'_running_since']),saved=Number(session._saved_at);
+ if(Number.isFinite(start)&&Number.isFinite(saved)&&saved>=start)
+  session['part'+p+'_elapsed_offset']=(Number(session['part'+p+'_elapsed_offset'])||0)+Math.max(0,Math.floor((Math.min(Date.now(),saved)-start)/1000));
+ session.clockRunning=false;session['part'+p+'_running_since']=null; // reabre sempre em pausa
+}
 let charts={},lastMin=-1,lastQ=-1,swapIdx=null,wl=null;
 const nulls=()=>[null,null,null,null,null];
 
@@ -288,7 +330,7 @@ function defSession(){
  for(const p of[1,2]){const o='part'+p+'_elapsed_offset',r='part'+p+'_running_since';
   if(typeof session[o]!=='number'||session[o]<0)session[o]=0;if(session[r]===undefined)session[r]=null}
  if(session.currentPart===undefined)session.currentPart=null;
- if(!session.partMin)session.partMin=20;
+ if(!session.partMin)session.partMin=25;
  if(!Array.isArray(session.absent))session.absent=[];
 }
 function fixField(){
@@ -298,15 +340,20 @@ function fixField(){
 const absent=()=>session.absent||[];
 const called=()=>ROSTER.filter(p=>!absent().includes(p.number));
 const inField=n=>onField.some(s=>s&&s.number===n);
-const ids=['opponent','date','time','location','competition','round','partMin'];
-function fillInputs(){ids.forEach(i=>$(i).value=session[i]??(i==='partMin'?20:''))}
+const ids=['opponent','date','time','location','competition','round','recorder','partMin'];
+const RECORDER_KEY='futsal:recorder';
+function fillInputs(){
+ if(!session.recorder){try{session.recorder=localStorage.getItem(RECORDER_KEY)||''}catch{}}
+ ids.forEach(i=>$(i).value=session[i]??(i==='partMin'?25:''));
+}
 function updSess(){
  if(!$('opponent'))return;
  ids.forEach(i=>session[i]=$(i).value);
- session.partMin=Math.max(1,parseInt(session.partMin,10)||20);
+ session.partMin=Math.max(1,parseInt(session.partMin,10)||25);
+ session._saved_at=Date.now();
  localStorage.setItem(K.s,JSON.stringify(session));
 }
-ids.forEach(i=>$(i).addEventListener('change',()=>{updSess();renderAll()}));
+ids.forEach(i=>$(i).addEventListener('change',()=>{updSess();if(i==='recorder'){try{localStorage.setItem(RECORDER_KEY,session.recorder||'')}catch{}}renderAll()}));
 function saveAll(){
  updSess();
  localStorage.setItem(K.r,JSON.stringify(ROSTER));localStorage.setItem(K.q,JSON.stringify(queue));
@@ -339,7 +386,8 @@ function startPart(p){
   return;
  }
 
- if((partElapsed(p)>0||queue.some(e=>e.part===p))&&!confirm('Esta parte já foi iniciada. Reiniciar o relógio a zero?'))return;
+ if(p===2&&!session.part1_ended)return toast('Termina a 1.ª parte antes de iniciar a 2.ª');
+ if(partElapsed(p)>0||session['part'+p+'_start']||session['part'+p+'_ended'])return toast('Esta parte já foi iniciada. Usa as correções de tempo, sem reiniciar.');
  commit();
  const k='part'+p;
  delete session[k+'_ended'];
@@ -367,7 +415,7 @@ function endPart(p){
  // Fecha automaticamente o tempo de todos os atletas que ainda estão em campo.
  // Os eventos SAI ficam registados no minuto/tempo exato do fim da parte.
  const leaving=onField.filter(Boolean).map(en=>en.number);
- leaving.forEach(n=>add(n,'SAI'));
+ curAct=null;leaving.forEach(n=>add(n,'SAI'));
 
  // Campo sempre vazio entre partes e no fim do jogo.
  onField=nulls();
@@ -379,90 +427,115 @@ function endPart(p){
 
  saveAll();
  toast(p+'ª parte terminada — jogadores retirados e campo limpo');
+ setTimeout(()=>{if(confirm((p===1?'Intervalo':'Fim do jogo')+': guardar já o jogo (.json)?\nPõe o ficheiro na pasta partilhada do escalão.'))$('saveGameBtn').click()},300);
 }
 
 /* ---------- Eventos ---------- */
 function mk(pl,code,note,rating,rl){
- updSess();const m=eventMeta[code]||{},p=session.currentPart||1;
+ updSess();const m=eventMeta[code]||{},p=session.currentPart||(session.part1_ended?2:1);
  return{event_id:'evt_'+Math.random().toString(36).slice(2,9),session_id:session.session_id,part:p,client_timestamp:new Date().toISOString(),
   minute:Math.floor(partElapsed(p)/60),game_marker:gameElapsed(),player_id:pl,event_code:code,event_label:m.label||code,event_sigla:m.sigla||code,
   note:note||'',rating:rating??'',rating_label:rl||''};
 }
-const add=(pl,code,note,r,rl)=>queue.push(mk(pl,code,note,r,rl));
+// cada toque do utilizador agrupa os eventos que gera (act_id), para o "Anular último"
+let curAct=null;
+document.addEventListener('click',()=>{curAct='a_'+Date.now().toString(36)+Math.random().toString(36).slice(2,5);setTimeout(()=>curAct=null,0)},true);
+const add=(pl,code,note,r,rl)=>{const ev=mk(pl,code,note,r,rl);if(curAct)ev.act_id=curAct;queue.push(ev);return ev};
 function score(){let a=0,b=0;for(const e of queue){if(e.event_code==='GOL')a++;if(e.event_code==='GOS')b++}return{marcados:a,sofridos:b}}
 function rebuildField(){
- const f=nulls();
- for(const ev of queue){
-  const n=ev.player_id,c=ev.event_code;
-  if(c==='ENT'){if(!f.some(s=>s&&s.number===n)){const i=f.indexOf(null);if(i>-1)f[i]={number:n,position:null}}}
-  else if(c==='SAI'){const i=f.findIndex(s=>s&&s.number===n);if(i>-1)f[i]=null}
-  else if(codePos[c]){const s=f.find(s=>s&&s.number===n);if(s)s.position=codePos[c]}
- }
- onField=f;
+ const f=nulls();for(const ev of orderedFieldEvents()){
+  const n=Number(ev.player_id),c=ev.event_code;
+  if(c==='ENT'){if(!f.some(x=>x&&x.number===n)){const i=f.indexOf(null);if(i>=0)f[i]={number:n,position:null};}}
+  else if(c==='SAI'){const i=f.findIndex(x=>x&&x.number===n);if(i>=0)f[i]=null;}
+  else if(codePos[c]){const x=f.find(x=>x&&x.number===n);if(x)x.position=codePos[c];}
+ }onField=f;
 }
 function delEvent(i){
  const ev=queue[i];if(!ev)return;
- queue.splice(i,1);
+ if(ev.event_code==='GOL'){
+  const assist=goalAssistEvent(ev);if(assist)queue.splice(queue.indexOf(assist),1);
+ }else if(ev.event_code==='ASS'&&ev.goal_event_id){
+  const goal=queue.find(x=>x.event_code==='GOL'&&x.event_id===ev.goal_event_id);if(goal)delete goal.assist_player_id;
+ }
+ queue.splice(queue.indexOf(ev),1);
  if(['ENT','SAI'].includes(ev.event_code)||codePos[ev.event_code])rebuildField();
  saveAll();toast('Evento anulado: '+ev.event_sigla);
 }
 
-/* ---------- Tempos ---------- */
-function stints(n){
- let t=0,e=null;
- for(const ev of queue){
-  if(ev.player_id!==n)continue;
-  if(ev.event_code==='ENT'&&e===null)e=ev.game_marker||0;
-  else if(ev.event_code==='SAI'&&e!==null){t+=Math.max(0,(ev.game_marker||0)-e);e=null}
- }
- return{t,e};
+/* ---------- Tempos: cálculo centralizado a partir de intervalos ENT -> SAI ---------- */
+function eventPart(ev){
+ if(Number(ev.part)===2)return 2;
+ // Compatibilidade com ficheiros antigos: pré-entradas na 2ª parte gravadas com part=1.
+ if(!session.part2_start||!['ENT','P_FIXO','P_ALA','P_PIVOT','P_GR'].includes(ev.event_code))return 1;
+ const m=Number(ev.game_marker),b=partElapsed(1),at=Date.parse(ev.client_timestamp),t2=Date.parse(session.part2_start);
+ if(!Number.isFinite(m)||Math.abs(m-b)>1||!Number.isFinite(at)||!Number.isFinite(t2)||at>t2+120000||at<t2-1800000)return 1;
+ const exits=queue.filter(x=>x.event_code==='SAI'&&Number(x.part)===1&&Math.abs(Number(x.game_marker)-b)<=1)
+  .map(x=>Date.parse(x.client_timestamp)).filter(Number.isFinite);
+ const end1=Date.parse(session.part1_start),lastExit=exits.length?Math.max(...exits):-Infinity;
+ return at>Math.max(lastExit,Number.isFinite(end1)?end1+b*1000:-Infinity)+1000?2:1;
 }
-const stintSec=n=>{const s=stints(n);return s.e!==null&&inField(n)?Math.max(0,gameElapsed()-s.e):0};
-const playSec=n=>stints(n).t+stintSec(n);
-const count=(n,c)=>queue.filter(e=>e.player_id===n&&e.event_code===c).length;
-function gAbsMin(ev){const pm=session.partMin||20;return(ev.part===2?pm:0)+Number(ev.minute||0)}
-function stintsList(n){
- const evs=queue.filter(e=>e.player_id===n&&(e.event_code==='ENT'||e.event_code==='SAI')).slice().sort((a,b)=>new Date(a.client_timestamp)-new Date(b.client_timestamp));
- const list=[];let cur=null;
- for(const ev of evs){
-  if(ev.event_code==='ENT'&&!cur)cur={startAbs:gAbsMin(ev),startRel:Number(ev.minute||0),part:ev.part};
-  else if(ev.event_code==='SAI'&&cur){list.push({...cur,endAbs:gAbsMin(ev),endRel:Number(ev.minute||0)});cur=null}
- }
- if(cur&&inField(n)){
-  const nowRel=session.currentPart===cur.part?Math.floor(partElapsed(cur.part)/60):cur.startRel;
-  list.push({...cur,endAbs:currentAbsMin(),endRel:nowRel});
- }
- return list;
+function eventSecond(ev,part=eventPart(ev)){
+ const t=Number(ev.game_marker),fallback=Math.max(0,Number(ev.minute)||0)*60;
+ return ev.game_marker!=null&&ev.game_marker!==''&&Number.isFinite(t)?Math.max(0,t-(part===2?partElapsed(1):0)):fallback;
 }
-function playSecByPart(n,part){
- let t=0,e=null;
- for(const ev of queue){
-  if(ev.player_id!==n||ev.part!==part)continue;
-  if(ev.event_code==='ENT'&&e===null)e=ev.game_marker||0;
-  else if(ev.event_code==='SAI'&&e!==null){t+=Math.max(0,(ev.game_marker||0)-e);e=null}
- }
- if(e!==null&&session.currentPart===part&&inField(n))t+=Math.max(0,gameElapsed()-e);
- return t;
+function orderedFieldEvents(){
+ return queue.map((ev,i)=>({ev,i})).filter(x=>['ENT','SAI'].includes(x.ev.event_code)||codePos[x.ev.event_code])
+  .sort((a,b)=>eventPart(a.ev)-eventPart(b.ev)||eventSecond(a.ev)-eventSecond(b.ev)||
+   (Date.parse(a.ev.client_timestamp)||0)-(Date.parse(b.ev.client_timestamp)||0)||a.i-b.i).map(x=>x.ev);
 }
+function playerIntervals(n){
+ const out=[];
+ for(const part of [1,2]){
+  const cap=Math.max(0,partElapsed(part));
+  const evs=queue.map((ev,i)=>({ev,i})).filter(x=>Number(x.ev.player_id)===Number(n)&&
+   ['ENT','SAI'].includes(x.ev.event_code)&&eventPart(x.ev)===part)
+   .sort((a,b)=>eventSecond(a.ev,part)-eventSecond(b.ev,part)||
+    (Date.parse(a.ev.client_timestamp)||0)-(Date.parse(b.ev.client_timestamp)||0)||a.i-b.i);
+  let start=null;
+  for(const {ev} of evs){
+   const t=Math.min(cap,eventSecond(ev,part));
+   if(ev.event_code==='ENT') {if(start===null)start=t;}
+   else if(start!==null){if(t>start)out.push({part,start,end:t,seconds:t-start,open:false});start=null;}
+  }
+  const ended=!!session['part'+part+'_ended']||(part===1&&!!session.part2_start);
+  const open=!ended&&Number(session.currentPart)===part&&inField(Number(n));
+  if(start!==null&&(ended||open)&&cap>start)out.push({part,start,end:cap,seconds:cap-start,open});
+ }
+ return out;
+}
+function stints(n){const a=playerIntervals(n),cur=a.filter(x=>x.open).at(-1);
+ return {t:a.filter(x=>!x.open).reduce((t,x)=>t+x.seconds,0),e:cur?cur.start+(cur.part===2?partElapsed(1):0):null};}
+const stintSec=n=>playerIntervals(n).filter(x=>x.open).reduce((t,x)=>t+x.seconds,0);
+const playSec=n=>playerIntervals(n).reduce((t,x)=>t+x.seconds,0);
+const count=(n,c)=>queue.filter(e=>Number(e.player_id)===Number(n)&&e.event_code===c).length;
+function gAbsMin(ev){return ((eventPart(ev)===2?partElapsed(1):0)+eventSecond(ev))/60;}
+function stintsList(n){return playerIntervals(n).map(x=>{const b=x.part===2?partElapsed(1):0;
+ return {part:x.part,startRel:x.start/60,endRel:x.end/60,startAbs:(b+x.start)/60,endAbs:(b+x.end)/60,seconds:x.seconds};});}
+function playSecByPart(n,p){return playerIntervals(n).filter(x=>x.part===p).reduce((t,x)=>t+x.seconds,0);}
 const totalOf=c=>queue.filter(e=>e.event_code===c).length;
 function playerStats(){
  return called().map(p=>({number:p.number,name:p.name,sec:playSec(p.number),goals:count(p.number,'GOL'),ass:count(p.number,'ASS'),rab:count(p.number,'RAB'),rfb:count(p.number,'RFB'),
-  rec:count(p.number,'REC'),per:count(p.number,'PER'),fco:count(p.number,'FCO'),fso:count(p.number,'FSO'),def:count(p.number,'DEF')})).sort((a,b)=>b.sec-a.sec);
+  rec:count(p.number,'REC'),per:count(p.number,'PER'),fco:count(p.number,'FCO'),fso:count(p.number,'FSO'),def:count(p.number,'DEF')})).map(s=>({...s,shots:s.goals+s.rab+s.rfb,eff:s.goals+s.rab+s.rfb?Math.round(100*s.goals/(s.goals+s.rab+s.rfb)):null})).sort((a,b)=>b.sec-a.sec);
 }
 
 /* ---------- Render ---------- */
-const photoSrc=p=>'images/'+(p.photo||p.number+'.jpg');
+// foto por defeito de um atleta novo sem foto: fundo amarelo, três riscas pretas e um vulto cinzento
+const NO_PHOTO='data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120"><rect width="100" height="120" fill="#FFD400"/><rect x="64" width="9" height="120" fill="#111"/><rect x="77" width="9" height="120" fill="#111"/><rect x="90" width="10" height="120" fill="#111"/><circle cx="44" cy="50" r="19" fill="#8a8a8a"/><path d="M8 120c0-26 16-42 36-42s36 16 36 42z" fill="#8a8a8a"/></svg>');
+const photoSrc=p=>String(p.photo||'').startsWith('data:')?p.photo:p.guest?NO_PHOTO:'images/'+(p.photo||p.number+'.jpg');
 const initials=n=>String(n).split(' ').map(x=>x[0]||'').join('').slice(0,2).toUpperCase();
 const vis=p=>`<img class="photo" src="${esc(photoSrc(p))}" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="initials" style="display:none">${esc(initials(p.name))}</div>`;
 
+let rosterHidden=(()=>{try{return localStorage.getItem(NS+'rosterHidden')==='1'}catch{return false}})();
 function renderRoster(){
  const list=called(),ab=ROSTER.filter(p=>absent().includes(p.number));
  $('calledCount').textContent='('+list.length+')';
- $('roster').innerHTML=list.map(p=>`<div class="player">${vis(p)}<div class="name">${p.number} - ${esc(p.name)}</div>
-  <div class="small" style="margin-top:6px">Tempo em jogo: <strong class="playTime" data-player="${p.number}">${fmt(playSec(p.number))}</strong></div>
-  <div style="margin-top:10px;display:flex;gap:6px"><button class="btn gray addFieldBtn" data-num="${p.number}" type="button">${swapIdx!==null?'Entrar (trocar)':'Entrar'}</button><button class="btn removeBtn" data-num="${p.number}" type="button">Retirar</button></div></div>`).join('');
+ const hide=rosterHidden&&swapIdx===null;
+ $('roster').style.display=hide?'none':'';$('roster').classList.toggle('swap',swapIdx!==null);
+ $('rosterToggle').textContent=rosterHidden?'Mostrar':'Esconder';
+ $('roster').innerHTML=list.filter(p=>!inField(p.number)||swapIdx===null).map(p=>`<div class="player${p.guest?' guest':''}" title="Tempo em jogo: ${fmt(playSec(p.number))}${p.guest?' · atleta de outro escalão':''}">${vis(p)}<div class="pinfo"><span class="name" title="${p.number} - ${esc(p.name)}">${p.number} - ${esc(p.name)}</span><span class="small">Tempo: <strong class="playTime" data-player="${p.number}">${fmt(playSec(p.number))}</strong>${inField(p.number)?' · em campo':''}</span></div>
+  <div class="pbtns"><button class="btn gray addFieldBtn" data-num="${p.number}" type="button" title="${swapIdx!==null?'Entra para o lugar do jogador escolhido em Trocar':'Coloca este jogador em campo (regista a entrada)'}" ${inField(p.number)?'disabled':''}>${swapIdx!==null?'⇄ Entrar':'Entrar'}</button><button class="btn removeBtn" data-num="${p.number}" type="button" title="Retirar dos convocados deste jogo">Retirar</button></div></div>`).join('');
  $('absentBox').style.display=ab.length?'block':'none';
- $('absentList').innerHTML=ab.map(p=>`<span style="white-space:nowrap"><span class="small">${p.number} - ${esc(p.name)}</span> <button class="btn restoreBtn" data-num="${p.number}" type="button">Repor</button></span>`).join('');
+ $('absentList').innerHTML=ab.map(p=>`<span style="white-space:nowrap"><span class="small">${p.number} - ${esc(p.name)}</span> <button class="btn restoreBtn" data-num="${p.number}" type="button" title="Volta a convocar este jogador">Repor</button></span>`).join('');
 }
 function renderField(){
  fixField();
@@ -471,13 +544,13 @@ function renderField(){
   const p=ROSTER.find(r=>r.number===en.number)||{number:en.number,name:'?'};
   return`<div class="slotCard" ${swapIdx===i?'style="border-color:#111;border-style:solid;box-shadow:0 0 0 3px #FFD400"':''}>
   <div class="slotHeader"><span class="badge">Pos ${i+1} — ${en.position||'—'}</span>
-   <button class="btn gray swapBtn" data-idx="${i}" type="button">Trocar</button><button class="btn gray slotRemove" data-idx="${i}" type="button">Sair</button></div>
+   <button class="btn gray swapBtn" data-idx="${i}" type="button" title="Escolhe este jogador para sair; depois carrega em Entrar no que o substitui">Trocar</button><button class="btn gray slotRemove" data-idx="${i}" type="button" title="Tira este jogador do campo (regista a saída)">Sair</button></div>
   <div style="margin-top:6px;display:flex;flex-direction:column;align-items:center">${vis(p)}
    <div class="name">${p.number} - ${esc(p.name)}</div>
    <div class="small" style="margin-top:6px">Tempo em jogo: <strong class="onFieldTotalTime" data-player="${p.number}">${fmt(playSec(p.number))}</strong></div>
    <div class="small">Na quadra: <strong class="onFieldPartialTime" data-player="${p.number}">${fmt(stintSec(p.number))}</strong></div></div>
-  <div class="pos-picker">${['Fixo','Ala','Pivot','GR'].map(x=>`<button class="pos-btn ${en.position===x?'active':''}" data-idx="${i}" data-pos="${x}" type="button">${x}</button>`).join('')}</div>
-  <div class="evgrid">${PRIORITY.map(c=>`<button class="event-btn" data-num="${p.number}" data-code="${c}" title="${eventMeta[c].label}" style="background:${typeColors[eventMeta[c].type]};color:${fgOf(typeColors[eventMeta[c].type])}" type="button">${eventMeta[c].sigla}</button>`).join('')}</div></div>`;
+  <div class="pos-picker">${['Fixo','Ala','Pivot','GR'].map(x=>`<button class="pos-btn ${en.position===x?'active':''}" data-idx="${i}" data-pos="${x}" type="button" title="Posição em campo: ${x}">${x}</button>`).join('')}</div>
+  <div class="evgrid">${PRIORITY.filter(c=>c!=='ASS'||!(typeof OPTS!=='undefined'&&OPTS.assists)).map(c=>`<button class="event-btn" data-num="${p.number}" data-code="${c}" title="${eventMeta[c].label}" style="background:${typeColors[eventMeta[c].type]};color:${fgOf(typeColors[eventMeta[c].type])}" type="button">${eventMeta[c].sigla}</button>`).join('')}</div></div>`;
  }).join('');
 }
 function renderQueue(){
@@ -488,8 +561,8 @@ function renderQueue(){
   if(flt&&flt!=='team'&&String(ev.player_id)!==flt)continue;
   const p=ev.player_id==null?null:ROSTER.find(x=>x.number===ev.player_id);
   rows.push(`<tr><td>${i+1}</td><td>${ev.minute}</td><td>${ev.part}</td><td>${ev.player_id==null?'(equipa)':esc(ev.player_id+' - '+(p?p.name:''))}</td>
-   <td>${esc(ev.event_label)}</td><td>${esc(ev.event_sigla)}</td><td>${esc(ev.rating_label)}</td><td>${esc(ev.note)}</td>
-   <td>${esc((ev.client_timestamp||'').slice(11,19))}</td><td><button class="btn warn delEv" data-i="${i}" type="button">x</button></td></tr>`);
+   <td>${esc(ev.event_label)}${ev.forma_label?' — '+esc(ev.forma_label):''}${ev.local_x!=null&&!ev.forma_label?' 📍':''}</td><td>${esc(ev.event_sigla)}</td><td>${esc(ev.rating_label)}</td><td>${esc(ev.note)}</td>
+   <td>${esc((ev.client_timestamp||'').slice(11,19))}</td><td style="white-space:nowrap">${['GOL','GOS','RAB','RFB','RSO'].includes(ev.event_code)?`<button class="btn gray goalInfoBtn" data-i="${i}" type="button" title="${ev.event_code==='GOL'||ev.event_code==='GOS'?'Forma e local do golo':'Local do remate'}">${ev.event_code==='GOL'||ev.event_code==='GOS'?'ℹ':'📍'}</button> `:''}<button class="btn gray editTime" data-i="${i}" type="button" title="${['ENT','SAI'].includes(ev.event_code)?'Corrigir o tempo desta substituição (quem sai e quem entra mudam juntos)':'Corrigir o tempo deste evento'}">⏱</button> <button class="btn warn delEv" data-i="${i}" type="button" title="Apagar este evento">x</button></td></tr>`);
  }
  document.querySelector('#eventsTable tbody').innerHTML=rows.join('');
  $('queueCount').textContent=queue.length;
@@ -501,9 +574,10 @@ function renderFilter(){
 }
 function renderLive(){
  const cp=session.currentPart||null,pt=cp?cp+'ª Parte':'—',el=cp?fmt(partElapsed(cp)):'00:00',sc=score(),st=sc.marcados+' - '+sc.sofridos;
- const fouls=queue.filter(e=>e.event_code==='FCO'&&e.part===(cp||1)).length;
+ const fp=e=>(typeof eventPart==='function'?eventPart(e):e.part)===(cp||1),fouls=queue.filter(e=>e.event_code==='FCO'&&fp(e)).length,foulsS=queue.filter(e=>e.event_code==='FSO'&&fp(e)).length;
  $('livePart').textContent=pt;$('liveElapsedPart').textContent=el;$('liveScore').textContent=st;
- $('liveFouls').textContent=fouls+(fouls>=5?' (livres diretos)':'');
+ $('liveFouls').textContent=foulsS+' - '+fouls;
+ $('liveFoulsNote').textContent=[fouls>=5?'livres diretos contra':'',foulsS>=5?'livres diretos a favor':''].filter(Boolean).join(' · ');
  $('foulBox').classList.toggle('foul',fouls>=5);
  updatePartButtons();
 }
@@ -512,20 +586,60 @@ function updatePartButtons(){
  $('endPart1').disabled=!canEnd(1);
  $('endPart2').disabled=!canEnd(2);
 }
+let statsSig='';
 function renderStats(){
- document.querySelector('#playerStatsTable tbody').innerHTML=playerStats().map(s=>`<tr><td>${s.number}</td><td>${esc(s.name)}</td><td>${fmt(s.sec)}</td><td>${s.goals}</td><td>${s.ass}</td><td>${s.rab}</td><td>${s.rfb}</td><td>${s.rec}</td><td>${s.per}</td><td>${s.fco}</td><td>${s.fso}</td><td>${s.def}</td></tr>`).join('');
+ const p40=$('statsMode')&&$('statsMode').value==='p40';
+ const v=(x,sec)=>{if(!p40)return x;if(sec<300)return'—';const r=x*2400/sec;return(Math.round(r*10)/10).toString().replace('.',',')};
+ const html=playerStats().map(s=>`<tr><td>${s.number}</td><td>${esc(s.name)}</td><td><span class="playTime" data-player="${s.number}">${fmt(s.sec)}</span></td><td>${v(s.goals,s.sec)}</td><td>${v(s.ass,s.sec)}</td><td>${v(s.rab,s.sec)}</td><td>${v(s.rfb,s.sec)}</td><td>${s.eff==null?'—':s.eff+'%'}</td><td>${v(s.rec,s.sec)}</td><td>${v(s.per,s.sec)}</td><td>${v(s.fco,s.sec)}</td><td>${v(s.fso,s.sec)}</td><td>${v(s.def,s.sec)}</td></tr>`).join('');
+ if(html!==statsSig){document.querySelector('#playerStatsTable tbody').innerHTML=html;statsSig=html}
 }
-function renderSummary(){
- const sc=score();
- $('sumGoalsFor').textContent=sc.marcados;$('sumGoalsAgainst').textContent=sc.sofridos;
- $('sumShotsOn').textContent=totalOf('RAB');$('sumShotsOff').textContent=totalOf('RFB');
- $('sumRecoveries').textContent=totalOf('REC');$('sumLosses').textContent=totalOf('PER');
-}
+
+function renderSummary(){renderGoalsInfo()}
 function updTimes(){
  document.querySelectorAll('.playTime,.onFieldTotalTime').forEach(el=>el.textContent=fmt(playSec(+el.dataset.player)));
  document.querySelectorAll('.onFieldPartialTime').forEach(el=>el.textContent=fmt(stintSec(+el.dataset.player)));
 }
-function currentAbsMin(){const pm=session.partMin||20;return session.currentPart===2?pm+Math.floor(partElapsed(2)/60):Math.floor(partElapsed(1)/60)}
+function currentAbsMin(){return Math.floor(gameElapsed()/60)}
+
+/* ---------- Visualizacao grafica: escala fixa por parte ---------- */
+// A duracao real nunca e alterada. Apenas as coordenadas dos graficos
+// sao comprimidas dentro do ultimo minuto de cada periodo.
+function graphPeriodMinutes(){
+ const n=Math.trunc(Number(session.partMin));
+ return Number.isFinite(n)&&n>=1?Math.min(n,60):25;
+}
+function graphPartMinute(part,seconds){
+ const limit=graphPeriodMinutes(),lastMinute=(limit-1)*60;
+ const sec=Math.max(0,Number(seconds)||0);
+ if(sec<=lastMinute)return sec/60;
+ // Se a parte exceder o regulamentar, o intervalo [24:00, fim real]
+ // e apresentado dentro de [24',25'] (idem 49'-50' na segunda parte).
+ const realEnd=Math.max(limit*60,partElapsed(part));
+ const denominator=Math.max(60,realEnd-lastMinute);
+ return Math.min(limit,limit-1+(sec-lastMinute)/denominator);
+}
+function graphMatchMinute(part,seconds){
+ return (part-1)*graphPeriodMinutes()+graphPartMinute(part,seconds);
+}
+function graphEventMinute(ev){
+ const part=eventPart(ev);
+ return graphMatchMinute(part,eventSecond(ev,part));
+}
+// Para histogramas, todos os eventos acima do limite entram efetivamente
+// no ultimo balde: minuto 25 ou minuto 50, nunca num minuto adicional.
+function graphBucket(ev){
+ const limit=graphPeriodMinutes(),part=eventPart(ev);
+ const idx=Math.floor(eventSecond(ev,part)/60);
+ return (part-1)*limit+Math.max(0,Math.min(limit-1,idx));
+}
+function updateGraphLimitNote(){
+ const el=$('graphTimeNote');if(!el)return;
+ const n=graphPeriodMinutes();
+ const t='Escala gráfica: '+n+' min por parte / '+(2*n)+' min no total. O tempo adicional é concentrado no último minuto de cada parte.';
+ el.title=t;
+ ['chartPlayerMinutes','chartIntensity','chartEntSai','chartEventsTimeline'].forEach(id=>{const c=$(id);if(c)c.title=t});
+}
+
 const EV_CATS=['Entradas/Saídas','Golos','Remates','Recuperações/Perdas','Faltas','Defesa do GR','Desconto de tempo / Pausa'];
 const EV_CAT_GAP=2.0;
 const EV_CAT_POS=Object.fromEntries(EV_CATS.map((c,i)=>[c,(EV_CATS.length-1-i)*EV_CAT_GAP]));
@@ -577,7 +691,8 @@ let radarSel=new Set();
 const halfTimeLinePlugin={
  id:'halfTimeLine',
  afterDraw(chart){
-  const{ctx,chartArea:{top,bottom},scales:{x}}=chart,pm=session.partMin||20;
+  if(!session.part1_ended&&!session.part2_start)return;
+   const{ctx,chartArea:{top,bottom},scales:{x}}=chart,pm=graphPeriodMinutes();
   const xp=x.getPixelForValue(pm);
   ctx.save();ctx.strokeStyle='#111';ctx.lineWidth=2;ctx.setLineDash([5,4]);ctx.beginPath();ctx.moveTo(xp,top);ctx.lineTo(xp,bottom);ctx.stroke();ctx.setLineDash([]);
   ctx.fillStyle='#111';ctx.font='11px Inter,Arial,sans-serif';ctx.textAlign='center';ctx.textBaseline='top';
@@ -594,11 +709,11 @@ function initCharts(){
    {label:'1ª Parte',data:[],backgroundColor:'#111',borderColor:'#111',borderWidth:1},
    {label:'2ª Parte',data:[],backgroundColor:'#FFD400',borderColor:'#111',borderWidth:1}
   ]},options:{responsive:true,maintainAspectRatio:false,
-   plugins:{legend:{display:true,position:'top'},title:{display:true,text:'Tempo em jogo por jogador (min)'}},
+   plugins:{legend:{display:true,position:'top'},title:{display:true,text:'Tempo em jogo por jogador (min)'},tooltip:{callbacks:{label:c=>{const sec=c.chart.$periodSeconds?.[c.dataIndex]?.[c.datasetIndex]??Math.round(Number(c.raw||0)*60);const capped=sec>graphPeriodMinutes()*60;return c.dataset.label+': '+fmt(sec)+(capped?' (gráfico limitado; excedente no último minuto)':'')},afterBody:items=>items.length?['Total: '+fmt(items[0].chart.$totalSeconds?.[items[0].dataIndex]||0)]:[]}}},
    scales:{x:{stacked:true},y:{stacked:true,beginAtZero:true,ticks:{precision:0}}}}});
  charts.act=new Chart($('chartActions'),{type:'bar',data:{labels:['Golos','Remates AB','Remates F','Recup.','Perdas','Assist.','F.Cometidas','F.Sofridas','Defesas GR'],datasets:[{label:'Totais',data:[],backgroundColor:'#111'}]},options:o('Principais estatísticas do jogo')});
- const oi=o('Intensidade Ofensiva (GOL, RAB, RFB) vs Defensiva (DEF, RSO, GOS)');oi.plugins.legend.display=true;
- charts.int=new Chart($('chartIntensity'),{type:'line',data:{labels:[],datasets:[{label:'Ofensiva',data:[],tension:.25,borderColor:'#111',backgroundColor:'#111'},{label:'Defensiva',data:[],tension:.25,borderColor:'#f2b800',backgroundColor:'#f2b800',borderWidth:3}]},options:oi});
+ const oi=o('Intensidade Ofensiva (GOL, RAB, RFB) vs Defensiva (DEF, RSO, GOS)');oi.plugins.legend.display=true;oi.scales.x={ticks:{maxTicksLimit:11}};
+ charts.int=new Chart($('chartIntensity'),{type:'line',data:{labels:[],datasets:[{label:'Ofensiva (Beira-Mar)',data:[],tension:.25,borderColor:'#E0A000',backgroundColor:'#E0A000',borderWidth:3},{label:'Defensiva (adversário)',data:[],tension:.25,borderColor:'#111',backgroundColor:'#111'}]},options:oi});
 
  charts.entsai=new Chart($('chartEntSai'),{type:'bar',data:{labels:[],datasets:[]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
   plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>{const v=c.raw;return Array.isArray(v)?`${v[0]}' – ${v[1]}'`:''}}}},
@@ -645,21 +760,36 @@ function renderRadarPicker(){
 }
 function updateEntSai(){
  if(!charts.entsai)return;
- const sel=document.querySelector('input[name=entSaiFilter]:checked'),filter=sel?+sel.value:0;
- const players=called();
- const raw=players.map(p=>stintsList(p.number).filter(s=>!filter||s.part===filter));
- const maxStints=Math.max(0,...raw.map(l=>l.length));
- const datasets=[];
- for(let i=0;i<maxStints;i++){
+ const limit=graphPeriodMinutes();
+ const sel=document.querySelector('input[name=entSaiFilter]:checked');
+ const filter=sel?Number(sel.value):0,players=called();
+ const original=players.map(p=>stintsList(p.number).filter(x=>!filter||x.part===filter));
+ const countStints=Math.max(0,...original.map(a=>a.length)),datasets=[];
+ for(let i=0;i<countStints;i++){
+  const actual=original.map(a=>a[i]||null);
   datasets.push({
-   data:raw.map(l=>{const s=l[i];if(!s)return null;return filter?[s.startRel,s.endRel]:[s.startAbs,s.endAbs]}),
+   data:actual.map(x=>{
+    if(!x)return null;
+    const offset=filter?0:(x.part-1)*limit;
+    return [offset+graphPartMinute(x.part,x.startRel*60),
+            offset+graphPartMinute(x.part,x.endRel*60)];
+   }),
+   actualStints:actual,
    backgroundColor:'#FFD400',borderColor:'#111',borderWidth:1,
    borderSkipped:false,borderRadius:2,barPercentage:.9,categoryPercentage:.92
   });
  }
  charts.entsai.data.labels=players.map(p=>p.number+' '+p.name);
  charts.entsai.data.datasets=datasets.length?datasets:[{data:players.map(()=>null)}];
- charts.entsai.options.scales.x.max=filter?(session.partMin||20):undefined;
+ charts.entsai.options.scales.x.min=0;
+ charts.entsai.options.scales.x.max=filter?limit:2*limit;
+ charts.entsai.options.scales.x.ticks={stepSize:limit<=10?1:5};
+ charts.entsai.options.plugins.tooltip.callbacks.label=c=>{
+  const x=c.dataset.actualStints?.[c.dataIndex];
+  return x?x.part+'\u00aa parte: '+fmt(Math.round(x.startRel*60))+' - '+
+   fmt(Math.round(x.endRel*60))+' (duração '+fmt(x.seconds)+')'+
+   (x.endRel>limit?' [tempo adicional no último minuto]':''):'';
+ };
  $('chartEntSaiWrap').style.height=Math.max(140,22+players.length*24)+'px';
  charts.entsai.resize();charts.entsai.update('none');
 }
@@ -679,36 +809,36 @@ function updateRadar(){
 }
 function updateEventsTimeline(){
  if(!charts.evTimeline)return;
- const byCode={};
- const sameCodeAtMinute={};
+ const limit=graphPeriodMinutes(),byCode={},sameCodeAtMinute={};
  queue.slice().sort((a,b)=>gAbsMin(a)-gAbsMin(b)).forEach(ev=>{
   const code=ev.event_code,cat=EV_CAT_OF[code];
   if(!cat)return;
-  const minute=gAbsMin(ev);
-  const key=`${code}|${minute}`;
+  const part=eventPart(ev),seconds=eventSecond(ev,part);
+  const plotted=graphEventMinute(ev);
+  const key=code+'|'+Math.floor(Math.min(part*limit-1e-8,plotted));
   const dup=sameCodeAtMinute[key]||0;
   sameCodeAtMinute[key]=dup+1;
-
   const base=TIMELINE_Y_BASE[code]||0;
   let extra=duplicateYOffset(dup);
-  // Mantém cada tipo na sua metade da linha (ex.: entradas acima, saídas abaixo).
   if(base>0)extra=Math.max(-0.24,extra);
   if(base<0)extra=Math.min(0.24,extra);
   const y=EV_CAT_POS[cat]+base+extra;
-
-  // Em coincidências muito numerosas, um micro-desfasamento horizontal evita nova sobreposição.
-  const x=minute+(dup>6?(dup-6)*0.045:0);
-  (byCode[code]=byCode[code]||[]).push({x,y,minute});
+  // Avoid horizontal markers leaking beyond 25/50 when many coincide.
+  const x=Math.min(part*limit,plotted+(dup>6?(dup-6)*0.008:0));
+  (byCode[code]=byCode[code]||[]).push({x,y,part,seconds});
  });
  charts.evTimeline.data.datasets=TIMELINE_CODES.filter(code=>byCode[code]?.length).map(code=>{
-  const s=TIMELINE_STYLE[code]||{label:eventMeta[code]?.label||code,bg:'#FFD400',border:'#111',pointStyle:'circle',rotation:0};
-  return{
-   label:s.label,data:byCode[code],
-   backgroundColor:s.bg,borderColor:s.border,borderWidth:2,
-   pointStyle:s.pointStyle,pointRotation:s.rotation||0,pointRadius:7,pointHoverRadius:9,pointBorderWidth:2
-  };
+  const st=TIMELINE_STYLE[code]||{label:eventMeta[code]?.label||code,bg:'#FFD400',border:'#111',pointStyle:'circle',rotation:0};
+  return {label:st.label,data:byCode[code],backgroundColor:st.bg,borderColor:st.border,
+   borderWidth:2,pointStyle:st.pointStyle,pointRotation:st.rotation||0,
+   pointRadius:7,pointHoverRadius:9,pointBorderWidth:2};
  });
- charts.evTimeline.options.scales.x.max=Math.max((session.partMin||20)*2,currentAbsMin());
+ charts.evTimeline.options.scales.x.max=2*limit;
+ charts.evTimeline.options.plugins.tooltip.callbacks.label=c=>{
+  const d=c.raw;
+  return c.dataset.label+' - '+d.part+'\u00aa parte, '+fmt(d.seconds)+
+    (d.seconds>limit*60?' (acumulado no último minuto gráfico)':'');
+ };
  charts.evTimeline.update('none');
 }
 document.addEventListener('change',e=>{
@@ -722,18 +852,38 @@ document.addEventListener('change',e=>{
  }
  if(e.target.name==='entSaiFilter')return updateEntSai();
 });
+function refreshTimeCharts(){
+ if(!charts.min)return;
+ const limit=graphPeriodMinutes(),st=playerStats();
+ const per=st.map(x=>[playSecByPart(x.number,1),playSecByPart(x.number,2)]);
+ charts.min.data.labels=st.map(x=>x.number+' '+x.name);
+ charts.min.data.datasets[0].data=per.map(x=>Math.min(limit,x[0]/60));
+ charts.min.data.datasets[1].data=per.map(x=>Math.min(limit,x[1]/60));
+ charts.min.$periodSeconds=per;
+ charts.min.$totalSeconds=st.map(x=>x.sec);
+ charts.min.options.scales.y.max=2*limit;
+ charts.min.options.plugins.title.text='Tempo de jogo por jogador';
+ charts.min.update('none');
+ updateEntSai();
+ updateGraphLimitNote();
+}
 function renderCharts(){
  if(!charts.min)return;
- const st=playerStats(),pm=session.partMin||20,abs=e=>(e.part===2?pm:0)+Number(e.minute||0);
- charts.min.data.labels=st.map(s=>s.number+' '+s.name);
- charts.min.data.datasets[0].data=st.map(s=>+(playSecByPart(s.number,1)/60).toFixed(1));
- charts.min.data.datasets[1].data=st.map(s=>+(playSecByPart(s.number,2)/60).toFixed(1));
+ refreshTimeCharts();
+ const limit=graphPeriodMinutes(),total=2*limit;
+ const attack=new Array(total).fill(0),defense=new Array(total).fill(0);
  charts.act.data.datasets[0].data=['GOL','RAB','RFB','REC','PER','ASS','FCO','FSO','DEF'].map(totalOf);
- const mx=Math.max(currentAbsMin(),...queue.map(abs),1),off=new Array(mx+1).fill(0),def=new Array(mx+1).fill(0);
- queue.forEach(e=>{const m=abs(e);if(['GOL','RAB','RFB'].includes(e.event_code))off[m]++;if(['DEF','RSO','GOS'].includes(e.event_code))def[m]++});
- charts.int.data.labels=off.map((_,i)=>i+"'");charts.int.data.datasets[0].data=off;charts.int.data.datasets[1].data=def;
- updateEntSai();updateRadar();updateEventsTimeline();
- Object.values(charts).forEach(c=>c.update('none'));
+ // Every event past the cap remains counted, but in minute 25 or 50.
+ queue.forEach(ev=>{
+  const i=graphBucket(ev);
+  if(['GOL','RAB','RFB'].includes(ev.event_code))attack[i]++;
+  if(['DEF','RSO','GOS'].includes(ev.event_code))defense[i]++;
+ });
+ charts.int.data.labels=attack.map((_,i)=>(i+1)+"'");
+ charts.int.data.datasets[0].data=attack;
+ charts.int.data.datasets[1].data=defense;
+ updateRadar();updateEventsTimeline();
+ [charts.act,charts.int].forEach(c=>c?.update('none'));
  lastMin=currentAbsMin();lastQ=queue.length;
 }
 function populateManual(){
@@ -752,12 +902,48 @@ function pick(title,opts,cb){
  opts.forEach(o=>{const b=document.createElement('button');b.className='btn gray';b.style.margin='4px';b.textContent=o.l;b.onclick=()=>{$('modal').style.display='none';cb(o.v)};$('mBody').appendChild(b)});
 }
 $('mClose').onclick=()=>$('modal').style.display='none';
+const GUIDE=[
+ ['1. Essencial — durante o jogo','Precisas disto em todos os jogos.',[
+  ['Informação do jogo','Na secção 2 preenche o adversário, a data, a competição, quem regista e a duração de cada parte.'],
+  ['Convocados','Na secção 3 aparecem todos os atletas, em cartões pequenos. Usa <strong>Retirar</strong> nos que não estão convocados (e <strong>Repor</strong> para voltar atrás). <strong>Esconder</strong> recolhe a lista; ao carregar em Trocar ela volta a aparecer.'],
+  ['Novo Atleta (outros escalões)','<strong>Novo Atleta</strong> cria o perfil na hora (número, nome e foto, que podes tirar no momento). Sem foto, fica com uma imagem amarela com riscas pretas e um vulto. Fica guardado no jogo e em <strong>Usados recentemente</strong>: no jogo seguinte basta um toque (o ✕ apaga-o dessa lista). <strong>Retirar</strong> tira-o só do jogo; no <strong>Novo jogo</strong> sai sozinho.'],
+  ['Cinco iniciais e relógio','Carrega em <strong>Entrar</strong> em cinco jogadores e depois em <strong>Início 1ª Parte</strong>. O relógio só arranca com jogadores em campo.'],
+  ['Registar ações','Só depois de iniciar a parte. Nos cartões dos jogadores em campo (secção 4) carrega na sigla: GOL, RAB, RFB, REC, PER, FCO, FSO, FAI (e ASS, se a pergunta das assistências estiver desligada nas opções). Ações do adversário/guarda-redes: <strong>Golo sofrido</strong>, <strong>Defesa do GR</strong>, <strong>Remate sofrido</strong>.'],
+  ['Substituições','<strong>Trocar</strong> no jogador que sai e depois <strong>Entrar</strong> no que entra. <strong>Sair</strong> só tira o jogador.'],
+  ['Anular última ação','<strong>↶ Anular última ação</strong> (barra do relógio) desfaz o último toque: um evento, uma troca inteira, uma entrada ou saída.'],
+  ['Partes','<strong>Fim 1ª Parte</strong> → <strong>Início 2ª Parte</strong> → <strong>Fim 2ª Parte</strong>. <strong>Pausar/Retomar</strong> para tempo parado. A barra do relógio mostra a parte, o tempo, o resultado e as faltas da parte (sofridas - cometidas), que fica a vermelho a partir da 5.ª falta cometida.'],
+  ['Guardar','Ao intervalo e no fim a app pergunta se queres guardar (ou usa <strong>Guardar jogo</strong>): descarrega um .json com tudo, já com o nome AAAA-MM-DD_Escalão_Adversário. Põe-no na pasta partilhada do escalão.']]],
+ ['2. Importante — corrigir erros','Para quando algo foi registado mal ou esquecido.',[
+  ['Corrigir substituição','Esqueceste-te de uma troca? Indica quem sai, quem entra e o minuto real. É sempre em par; só os cinco iniciais, as saídas no fim da parte ou uma expulsão podem ir sozinhos, marcando "Sem substituto".'],
+  ['Corrigir o tempo de um evento','Na tabela de eventos (secção 7), botão <strong>⏱</strong>. Numa entrada/saída de uma troca, o tempo muda para quem sai e quem entra ao mesmo tempo.'],
+  ['Apagar um evento','Botão <strong>x</strong> na tabela de eventos. Numa troca, anula a substituição inteira (as duas metades).'],
+  ['Detalhes de golos e remates','Botões <strong>ℹ</strong> (forma e local do golo) e <strong>📍</strong> (local do remate) na tabela de eventos.'],
+  ['Opções de registo','<strong>⚙ Opções de registo</strong> define o que a app pergunta ao registar golos, remates e assistências. Desliga para registar mais depressa; <strong>Selecionar todas</strong> e <strong>Limpar todas</strong> mudam todas de uma vez.'],
+  ['Limpar campo','Tira todos os jogadores do campo de uma vez (regista as saídas).']]],
+ ['3. Análise — depois do jogo','Lê o jogo a partir dos dados.',[
+  ['Resumo do jogo','Golos marcados e sofridos por forma, e remates com local. Só aparece quando há perguntas de local/forma ligadas nas opções de registo ou golos/remates com local ou forma já registados.'],
+  ['Mapa do campo','Escolhe o que mostrar (GOL, GOS, RAB, RFB, RSO, DEF), a parte e o jogador. Em <strong>Vista</strong>: pontos, calor ofensivo (amarelo), calor defensivo (preto) ou os dois.'],
+  ['Estatísticas por jogador','Tempo em jogo, golos, assistências, remates, <strong>eficácia</strong> (golos ÷ remates), recuperações, perdas e faltas. Em <strong>Por 40 min</strong> os valores ficam comparáveis entre quem jogou pouco e muito.'],
+  ['Gráficos','Tempo por jogador, principais ações, intensidade ofensiva vs defensiva, entradas e saídas, radar para comparar jogadores e eventos ao longo do tempo. O ⓘ por baixo dos gráficos explica a escala de tempo.'],
+  ['Exportar','<strong>Exportar estatísticas CSV</strong> e <strong>Exportar Eventos CSV</strong> (escolhes os tipos de eventos e a parte). Abre no Excel.']]],
+ ['4. Complementar','Útil, mas opcional.',[
+  ['Registo de outros eventos','Secção 6: avaliações (posicionamento, atitude, intensidade…) e notas, para um jogador ou para a equipa.'],
+  ['Abrir jogo','Carrega um .json guardado para rever ou continuar um jogo.'],
+  ['Novo jogo','Apaga os eventos e o relógio. O plantel volta a ser lido do atletas.csv do site e os atletas novos de outros escalões saem. Guarda antes!'],
+  ['Dados no browser','Tudo fica guardado neste browser: recarregar a página não apaga o jogo. Noutro computador, usa Guardar/Abrir jogo.'],
+  ['Sem internet','Depois de abrires a app uma vez com rede, ela abre no pavilhão mesmo sem internet (com gráficos, plantel e fotos).'],
+  ['Ajuda rápida','Passa o rato por cima dos botões para ver o que fazem.']]]
+];
 $('legendBtn').onclick=()=>{
  const items=Object.entries(eventMeta).map(([k,v])=>({k,...v})).sort((a,b)=>a.type-b.type||a.sigla.localeCompare(b.sigla));
- let t=null,h='';
- items.forEach(it=>{if(it.type!==t){t=it.type;h+=`<div style="margin-top:8px"><strong>Tipo ${t}</strong></div>`}
-  h+=`<div class="lrow"><div style="width:28px;height:18px;background:${typeColors[it.type]};border-radius:4px"></div><div><strong>${it.sigla}</strong> — ${esc(it.label)}</div></div>`});
- showModal('Legenda de Eventos',h);
+ let t=null,leg='';
+ items.forEach(it=>{if(it.type!==t){t=it.type;leg+=`<div style="margin-top:8px"><strong>Tipo ${t}</strong></div>`}
+  leg+=`<div class="lrow"><div style="width:28px;height:18px;background:${typeColors[it.type]};border-radius:4px"></div><div><strong>${it.sigla}</strong> — ${esc(it.label)}</div></div>`});
+ const guia=`<div class="small" style="margin-bottom:6px">Esta plataforma serve para registar, ao vivo, tudo o que acontece num jogo de futsal (quem joga, quanto tempo, golos, remates, faltas…) e transformar esses registos em estatísticas, mapas e gráficos para analisar a equipa e cada atleta. As funcionalidades estão ordenadas por importância: começa pelo nível 1.</div>`+
+  GUIDE.map(([h,sub,rows])=>`<div class="section-title" style="margin:12px 0 2px">${h}</div><div class="small muted">${sub}</div>`+rows.map(([k,v])=>`<div class="small" style="margin-top:5px"><strong>${k}</strong> — ${v}</div>`).join('')).join('');
+ showModal('Legenda e guia',`<div class="row" style="margin:0 0 8px"><button id="tabLeg" class="btn" type="button" title="Significado de cada sigla">Legenda de eventos</button><button id="tabGuia" class="btn gray" type="button" title="Para que serve a plataforma e como se usa">Como usar a plataforma</button></div><div id="tabBody"></div>`);
+ const show=g=>{$('tabBody').innerHTML=g?guia:leg;$('tabLeg').className='btn'+(g?' gray':'');$('tabGuia').className='btn'+(g?'':' gray')};
+ $('tabLeg').onclick=()=>show(false);$('tabGuia').onclick=()=>show(true);show(false);
 };
 
 /* ---------- Ações no campo ---------- */
@@ -767,8 +953,10 @@ function enter(num){
  if(swapIdx!==null){
   const old=onField[swapIdx];
   if(old){
+   const sid='sub_'+Math.random().toString(36).slice(2,9),k=queue.length;
    add(old.number,'SAI');onField[swapIdx]={number:num,position:old.position};add(num,'ENT');
    if(old.position)add(num,posCode[old.position]);
+   queue.slice(k).forEach(e=>e.sub_id=sid);
    swapIdx=null;saveAll();return toast('Troca feita');
   }
   swapIdx=null;
@@ -777,27 +965,36 @@ function enter(num){
  if(i<0)return toast('Campo já tem 5 — usa "Trocar"');
  onField[i]={number:num,position:null};add(num,'ENT');saveAll();
 }
+// botão ASS (só aparece com a pergunta das assistências desligada): liga ao último golo ainda sem assistência
+function assistBtn(n){
+ const g=[...queue].reverse().find(e=>e.event_code==='GOL'&&Number(e.player_id)!==n&&!goalAssistEvent(e)&&e.assist_player_id==null);
+ if(!g)return toast('Não há nenhum golo sem assistência para ligar. Regista primeiro o golo.');
+ const n0=queue.length;setGoalAssistant(g,n);const a=goalAssistEvent(g);if(a&&curAct)a.act_id=curAct;
+ saveAll();toast('Assistência de '+n+' no golo de '+g.player_id+' ('+g.minute+"')");
+}
 function goal(num){
- const others=onField.filter(s=>s&&s.number!==num).map(s=>{const p=ROSTER.find(r=>r.number===s.number);return{l:s.number+' - '+(p?p.name:'?'),v:s.number}});
- pick('Golo! Assistência de?',[...others,{l:'Ninguém',v:null}],a=>{add(num,'GOL');if(a!=null)add(a,'ASS');saveAll()});
+ add(num,'GOL');const ev=queue[queue.length-1];saveAll();goalInfo(ev,false,true);
 }
 document.addEventListener('click',e=>{
  const t=e.target;let b;
- if(b=t.closest('.removeBtn')){const n=+b.dataset.num;if(inField(n))return toast('Está em campo — tira-o primeiro');const k=queue.filter(e=>e.player_id===n).length;if(k)return toast('Tem '+k+' eventos registados neste jogo. Se for de um jogo anterior, usa "Novo jogo".');session.absent=[...absent(),n];saveAll();return}
+ if(b=t.closest('.removeBtn')){const n=+b.dataset.num;if(inField(n))return toast('Está em campo — tira-o primeiro');const k=queue.filter(e=>e.player_id===n).length;if(k)return toast('Tem '+k+' eventos registados neste jogo. Se for de um jogo anterior, usa "Novo jogo".');const pr=ROSTER.find(r=>r.number===n);if(pr&&pr.guest){if(!confirm('Tirar '+n+' - '+pr.name+' deste jogo? Continua nos atletas usados recentemente.'))return;removeGuest(n);return}session.absent=[...absent(),n];saveAll();return}
  if(b=t.closest('.restoreBtn')){const n=+b.dataset.num;session.absent=absent().filter(x=>x!==n);saveAll();return}
  if(b=t.closest('.addFieldBtn'))return enter(+b.dataset.num);
  if(b=t.closest('.pos-btn')){const i=+b.dataset.idx;if(onField[i]){onField[i].position=b.dataset.pos;add(onField[i].number,posCode[b.dataset.pos]);saveAll()}return}
  if(b=t.closest('.swapBtn')){const i=+b.dataset.idx;swapIdx=swapIdx===i?null:i;renderRoster();renderField();if(swapIdx!==null)toast('Escolhe nos convocados quem entra');return}
  if(b=t.closest('.slotRemove')){const i=+b.dataset.idx,en=onField[i];if(en)add(en.number,'SAI');onField[i]=null;swapIdx=null;saveAll();return}
- if(b=t.closest('.event-btn')){const n=+b.dataset.num,c=b.dataset.code;if(c==='GOL')goal(n);else{add(n,c);saveAll()}return}
- if(b=t.closest('.delEv')){const i=+b.dataset.i;if(confirm('Anular o evento #'+(i+1)+'?'))delEvent(i);return}
- if(b=t.closest('[data-team]')){add(null,b.dataset.team);saveAll();return}
+ if((b=t.closest('.event-btn,[data-team]'))&&!session.currentPart)return toast(session.part1_ended&&!session.part2_start?'Intervalo: inicia a 2ª parte antes de registar ações':session.part2_ended?'O jogo terminou. Para acrescentar eventos usa a secção 6 ou as correções':'Inicia a 1ª parte antes de registar ações');
+ if(b=t.closest('.event-btn')){const n=+b.dataset.num,c=b.dataset.code;if(c==='ASS')return assistBtn(n);if(c==='GOL')goal(n);else{add(n,c);saveAll();if(c==='RAB'||c==='RFB')shotLoc(queue[queue.length-1])}return}
+ if(b=t.closest('.delEv')){const i=+b.dataset.i;if(queue[i]&&isMove(queue[i].event_code))return deleteMove(queue[i]);if(confirm('Anular o evento #'+(i+1)+'?'))delEvent(i);return}
+ if(b=t.closest('[data-team]')){const tc=b.dataset.team;add(null,tc);saveAll();if(tc==='GOS')goalInfo(queue[queue.length-1]);else if(tc==='RSO')shotLoc(queue[queue.length-1]);return}
 });
 $('clearSlots').onclick=()=>{
  if(!confirm('Remover todos os jogadores do campo?'))return;
  onField.forEach(en=>{if(en)add(en.number,'SAI')});onField=nulls();swapIdx=null;saveAll();
 };
 $('evFilter').onchange=renderQueue;
+$('rosterToggle').onclick=()=>{rosterHidden=!rosterHidden;try{localStorage.setItem(NS+'rosterHidden',rosterHidden?'1':'0')}catch{}renderRoster()};
+$('statsMode').onchange=()=>{statsSig='';renderStats()};
 
 /* ---------- Importação ---------- */
 function splitCSV(text){
@@ -829,8 +1026,8 @@ function rowsToRoster(arr){
  return out;
 }
 $('newGameBtn').onclick=()=>{
- if(!confirm('Iniciar um novo jogo? Isto apaga os eventos, o relógio e os dados do jogo atual (guarda primeiro com "Guardar jogo"). O elenco mantém-se e voltam a aparecer todos os convocados.'))return;
- queue=[];onField=nulls();session={};swapIdx=null;defSession();fillInputs();saveAll();toast('Novo jogo iniciado');
+ if(!confirm('Iniciar um novo jogo? Isto apaga os eventos, o relógio e os dados do jogo atual (guarda primeiro com "Guardar jogo"). O elenco mantém-se e voltam a aparecer todos os convocados; os atletas de outros escalões saem (ficam nos usados recentemente).'))return;
+ queue=[];onField=nulls();session={};swapIdx=null;ROSTER=ROSTER.filter(r=>!r.guest);defSession();fillInputs();saveAll();toast('Novo jogo iniciado');
 };
 /* ---------- Eventos manuais ---------- */
 $('manualAdd').onclick=()=>{
@@ -846,24 +1043,66 @@ function download(name,text,type){
  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;
  document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
 }
-const fname=ext=>'futsal_'+(session.date||'jogo')+'_'+String(session.opponent||'adversario').replace(/[^\w-]+/g,'_')+'.'+ext;
+const APP_VERSION='2026-10-15';
+const slug=v=>String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\//g,'-').replace(/[^\w-]+/g,'_').replace(/^_+|_+$/g,'');
+// AAAA-MM-DD_Escalao_Adversario.ext  (ex.: 2026-10-18_Juvenis_2026-27_Leixoes.json)
+const fname=ext=>(session.date||'sem-data')+'_'+slug(ESCALAO)+'_'+(slug(session.opponent)||'adversario')+'.'+ext;
+const EXPORT_CATS=[
+ ['entsai','Entradas e saídas (ENT, SAI)',['ENT','SAI']],
+ ['golos','Golos e assistências (GOL, GOS, ASS)',['GOL','GOS','ASS']],
+ ['remates','Remates (RAB, RFB, RSO)',['RAB','RFB','RSO']],
+ ['recper','Recuperações e perdas (REC, PER)',['REC','PER']],
+ ['faltas','Faltas (FCO, FSO)',['FCO','FSO']],
+ ['def','Defesas do GR (DEF)',['DEF']],
+];
+const exportCatOf=c=>{for(const [k,,codes] of EXPORT_CATS)if(codes&&codes.includes(c))return k;return'aval'};
+function exportEvents(cats,part){
+ let g=0,s=0;
+ const rows=[['event_id','session_id','adversario','part','client_timestamp','minute','player_id','score_marcados','score_sofridos','event_code','event_label','event_sigla','rating','rating_label','note','forma','local_x','local_y','game_marker','goal_event_id','assist_player_id']];
+ for(const ev of queue){
+  if(ev.event_code==='GOL')g++;if(ev.event_code==='GOS')s++;   // o resultado conta sempre todos os golos
+  if(!cats.includes(exportCatOf(ev.event_code))||(part&&eventPart(ev)!==part))continue;
+  rows.push([ev.event_id,ev.session_id,session.opponent||'',ev.part,ev.client_timestamp,ev.minute,ev.player_id??'',g,s,ev.event_code,ev.event_label,ev.event_sigla,ev.rating,ev.rating_label,ev.note,ev.forma_label||'',ev.local_x??'',ev.local_y??'',ev.game_marker??'',ev.goal_event_id??'',ev.assist_player_id??'']);
+ }
+ return rows;
+}
 $('exportBtn').onclick=()=>{
  if(!queue.length)return toast('Sem eventos');
- let g=0,s=0;
- const rows=[['event_id','session_id','adversario','part','client_timestamp','minute','player_id','score_marcados','score_sofridos','event_code','event_label','event_sigla','rating','rating_label','note']];
- for(const ev of queue){
-  if(ev.event_code==='GOL')g++;if(ev.event_code==='GOS')s++;
-  rows.push([ev.event_id,ev.session_id,session.opponent||'',ev.part,ev.client_timestamp,ev.minute,ev.player_id??'',g,s,ev.event_code,ev.event_label,ev.event_sigla,ev.rating,ev.rating_label,ev.note]);
- }
- download(fname('csv'),csvOf(rows),'text/csv;charset=utf-8');
+ const sel=Array.isArray(OPTS.exportCats)?OPTS.exportCats:EXPORT_CATS.map(c=>c[0]);
+ const n=k=>queue.filter(e=>exportCatOf(e.event_code)===k).length;
+ showModal('Exportar eventos (CSV)',`
+  <div class="section-title" style="margin-top:0">Tipos de eventos</div>
+  ${EXPORT_CATS.map(([k,l])=>`<label class="small" style="display:flex;gap:8px;align-items:center;margin-top:6px;font-weight:400"><input type="checkbox" data-xc="${k}" ${sel.includes(k)?'checked':''}> ${l} <span class="muted">(${n(k)})</span></label>`).join('')}
+  <div class="row" style="margin-top:8px"><button id="xAll" class="btn gray" type="button" title="Seleciona todos os tipos">Todos</button><button id="xNone" class="btn gray" type="button" title="Limpa a seleção">Nenhum</button>
+   <label class="small" style="margin-left:auto" title="Exporta só os eventos desta parte">Parte <select id="xPart"><option value="0">Ambas</option><option value="1">1ª</option><option value="2">2ª</option></select></label></div>
+  <div class="row" style="justify-content:flex-end;margin-top:12px">
+   <button id="xGo" class="btn green" type="button" title="Descarrega os eventos dos tipos selecionados">Exportar eventos selecionados</button></div>`);
+ const box=$('mBody'),cur=()=>[...box.querySelectorAll('[data-xc]')].filter(i=>i.checked).map(i=>i.dataset.xc);
+ const keep=()=>{OPTS.exportCats=cur();saveOpts()};
+ box.querySelectorAll('[data-xc]').forEach(i=>i.onchange=keep);
+ $('xAll').onclick=()=>{box.querySelectorAll('[data-xc]').forEach(i=>i.checked=true);keep()};
+ $('xNone').onclick=()=>{box.querySelectorAll('[data-xc]').forEach(i=>i.checked=false);keep()};
+ $('xGo').onclick=()=>{
+  const cats=cur(),part=+$('xPart').value;if(!cats.length)return toast('Escolhe pelo menos um tipo de evento');
+  const rows=exportEvents(cats,part);if(rows.length<2)return toast('Não há eventos desses tipos'+(part?' na '+part+'ª parte':''));
+  const tag=cats.length===EXPORT_CATS.length?'':'_'+cats.join('-');
+  download(fname('csv').replace(/\.csv$/,'_'+(part?'p'+part+'_':'')+'eventos'+tag+'.csv'),csvOf(rows),'text/csv;charset=utf-8');
+  $('modal').style.display='none';toast((rows.length-1)+' eventos exportados');
+ };
 };
 $('exportStatsBtn').onclick=()=>{
  if(!ROSTER.length)return toast('Sem jogadores');
- const rows=[['number','name','tempo_em_jogo','golos','assistencias','RAB','RFB','REC','PER','FCO','FSO','DEF']];
- playerStats().forEach(s=>rows.push([s.number,s.name,fmt(s.sec),s.goals,s.ass,s.rab,s.rfb,s.rec,s.per,s.fco,s.fso,s.def]));
- download(fname('stats.csv'),csvOf(rows),'text/csv;charset=utf-8');
+ const rows=[['number','name','tempo_em_jogo','golos','assistencias','RAB','RFB','remates_total','eficacia_pct','REC','PER','FCO','FSO','DEF']];
+ playerStats().forEach(s=>rows.push([s.number,s.name,fmt(s.sec),s.goals,s.ass,s.rab,s.rfb,s.shots,s.eff??'',s.rec,s.per,s.fco,s.fso,s.def]));
+ download(fname('csv').replace(/\.csv$/,'_estatisticas.csv'),csvOf(rows),'text/csv;charset=utf-8');
 };
-$('saveGameBtn').onclick=()=>{updSess();download(fname('json'),JSON.stringify({session,roster:ROSTER,events:queue,onField},null,2),'application/json')};
+$('saveGameBtn').onclick=()=>{
+ updSess();const snap={...session,clockRunning:false};
+ if(session.clockRunning&&session.currentPart){const p=session.currentPart;snap['part'+p+'_elapsed_offset']=partElapsed(p);snap['part'+p+'_running_since']=null;}
+ const meta={escalao:ESCALAO,app_versao:APP_VERSION,registado_por:session.recorder||'',guardado_em:new Date().toISOString()};
+ download(fname('json'),JSON.stringify({meta,session:snap,roster:ROSTER,events:queue,onField},null,2),'application/json');
+ toast('Jogo guardado: '+fname('json'));
+};
 $('loadGameBtn').onclick=()=>$('loadGameFile').click();
 $('loadGameFile').onchange=e=>{
  const f=e.target.files[0];if(!f)return;
@@ -871,14 +1110,62 @@ $('loadGameFile').onchange=e=>{
  r.onload=evt=>{
   try{
    const d=JSON.parse(evt.target.result);
+   const m=d.meta||{};
+   if(m.escalao&&m.escalao!==ESCALAO&&!confirm('Este jogo é do escalão "'+m.escalao+'" e esta app é de "'+ESCALAO+'". Abrir mesmo assim?'))return;
    if(queue.length&&!confirm('Abrir um jogo vai substituir o jogo atual. Continuar?'))return;
    session=d.session||{};ROSTER=d.roster||[];queue=d.events||[];onField=d.onField||nulls();
-   session.clockRunning=false;defSession();fixField();fillInputs();saveAll();toast('Jogo carregado');
+   session.clockRunning=false;defSession();fixField();fillInputs();saveAll();toast('Jogo carregado'+(m.registado_por?' (registado por '+m.registado_por+')':''));
   }catch(err){console.error(err);toast('Erro ao abrir ficheiro')}
   e.target.value='';
  };
  r.readAsText(f);
 };
+
+/* ---------- Atletas de outros escalões: perfil criado na hora ---------- */
+// ficam no jogo (session.guests, gravados no .json) e numa lista de usados recentemente, comum a todos os escalões deste site
+const GUEST_LIB='futsal:guests';
+const guestLib=()=>{try{const a=JSON.parse(localStorage.getItem(GUEST_LIB));return Array.isArray(a)?a:[]}catch{return[]}};
+function saveGuestLib(a){try{localStorage.setItem(GUEST_LIB,JSON.stringify(a.slice(0,30)))}catch{toast('Sem espaço no browser para guardar mais fotos')}}
+function mergeGuests(){(session.guests||[]).forEach(g=>{if(!ROSTER.some(r=>r.number===g.number))ROSTER.push({...g,guest:true})})}
+function removeGuest(n){session.guests=(session.guests||[]).filter(g=>g.number!==n);ROSTER=ROSTER.filter(r=>!(r.guest&&r.number===n));session.absent=absent().filter(x=>x!==n);saveAll();toast('Atleta retirado deste jogo')}
+function addGuest(g){
+ const clash=ROSTER.find(r=>r.number===g.number);
+ if(clash)return toast('Já existe o nº '+g.number+' ('+clash.name+') neste jogo. Usa outro número.'),false;
+ const p={number:g.number,name:g.name,photo:g.photo||'',origin:g.origin||'',guest:true};
+ session.guests=[...(session.guests||[]),p];ROSTER.push(p);session.absent=absent().filter(x=>x!==p.number);
+ saveGuestLib([p,...guestLib().filter(x=>!(x.name===p.name&&x.origin===p.origin))]);
+ saveAll();toast(p.number+' - '+p.name+' junto ao jogo');return true;
+}
+function shrinkPhoto(file){return new Promise(res=>{
+ const rd=new FileReader();rd.onload=()=>{const im=new Image();im.onload=()=>{
+  const k=Math.min(1,160/Math.max(im.width,im.height)),cv=document.createElement('canvas');
+  cv.width=Math.round(im.width*k);cv.height=Math.round(im.height*k);cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);
+  res(cv.toDataURL('image/jpeg',.8))};im.onerror=()=>res('');im.src=rd.result};rd.onerror=()=>res('');rd.readAsDataURL(file)})}
+function openGuest(){
+ const lib=guestLib().filter(g=>!ROSTER.some(r=>r.guest&&r.name===g.name));
+ let photo='';
+ showModal('Novo Atleta',`
+  ${lib.length?`<div class="small"><strong>Usados recentemente</strong> — um toque junta ao jogo</div>
+   <div class="row" id="gLib" style="margin:6px 0 12px;gap:6px">${lib.map((g,i)=>`<span class="gchip" data-gi="${i}" title="Juntar ${esc(g.number+' - '+g.name)} a este jogo"><img src="${g.photo||NO_PHOTO}" alt=""><strong>${g.number}</strong> ${esc(g.name)}<button class="gx" data-gdel="${i}" type="button" title="Apagar da lista de usados recentemente">✕</button></span>`).join('')}</div>
+   <div class="section-title" style="margin:6px 0 2px">Novo atleta</div>`:''}
+  <div class="row"><label class="small">Nº <input id="gNum" type="number" min="1" max="9999" style="width:80px"></label>
+   <label class="small" style="flex:1">Nome <input id="gName" placeholder="Nome e apelido" style="width:100%;box-sizing:border-box"></label></div>
+  <div class="row"><label class="small" title="No telemóvel ou tablet podes tirar a foto na hora">Foto (opcional) <input id="gPhoto" type="file" accept="image/*"></label>
+   <img id="gPrev" alt="" style="display:none;width:48px;height:48px;border-radius:8px;object-fit:cover"></div>
+  <div class="row" style="justify-content:flex-end;margin-top:12px"><button id="gAdd" class="btn green" type="button" title="Junta o atleta aos convocados deste jogo">Juntar ao jogo</button></div>`);
+ $('gPhoto').onchange=async e=>{const f=e.target.files[0];if(!f)return;photo=await shrinkPhoto(f);if(photo){$('gPrev').src=photo;$('gPrev').style.display=''}};
+ $('gAdd').onclick=()=>{
+  const number=parseInt($('gNum').value,10),name=$('gName').value.trim().replace(/\s+/g,' ');
+  if(!(number>0))return toast('Indica o número da camisola');if(!name)return toast('Indica o nome');
+  if(addGuest({number,name,photo}))$('modal').style.display='none';
+ };
+ const box=$('gLib');if(box)box.onclick=e=>{
+  const d=e.target.closest('[data-gdel]');
+  if(d){e.stopPropagation();const g=lib[+d.dataset.gdel];saveGuestLib(guestLib().filter(x=>!(x.name===g.name&&x.origin===g.origin)));openGuest();return}
+  const c=e.target.closest('[data-gi]');if(c&&addGuest(lib[+c.dataset.gi]))$('modal').style.display='none';
+ };
+}
+$('guestBtn').onclick=openGuest;
 
 /* ---------- Relógio: botões ---------- */
 $('startPart').onclick=()=>startPart(1);
@@ -889,18 +1176,446 @@ $('endPart1').onclick=()=>endPart(1);
 $('endPart2').onclick=()=>endPart(2);
 window.addEventListener('beforeunload',e=>{if(queue.length){e.preventDefault();e.returnValue=''}});
 
+/* ===== CORREÇÕES RETROATIVAS: substituições esquecidas e tempos de eventos ===== */
+const mmss=s=>pad(Math.floor(s/60))+':'+pad(s%60);
+function parseMMSS(v){const m=String(v).trim().match(/^(\d{1,3})(?::(\d{1,2}))?$/);if(!m)return null;const sec=m[2]===undefined?0:+m[2];return sec>59?null:(+m[1])*60+sec}
+const partBase=p=>p===2?partElapsed(1):0;
+const markerFor=(p,sec)=>partBase(p)+sec;
+function stampFor(p,sec){const st=session['part'+p+'_start'];return st?new Date(Date.parse(st)+sec*1000).toISOString():new Date().toISOString()}
+function mkAt(pl,code,part,sec,note){
+ const m=eventMeta[code]||{};
+ return{event_id:'evt_'+Math.random().toString(36).slice(2,9),session_id:session.session_id,part,client_timestamp:stampFor(part,sec),
+  minute:Math.floor(sec/60),game_marker:markerFor(part,sec),player_id:pl,event_code:code,event_label:m.label||code,event_sigla:m.sigla||code,
+  note:note||'',rating:'',rating_label:'',corrigido:true};
+}
+/* ----- Substituições sempre em par: quem sai e quem entra mudam juntos ----- */
+const isMove=c=>c==='ENT'||c==='SAI';
+const nmPl=n=>{const r=ROSTER.find(x=>x.number===Number(n));return n+(r?' '+r.name:'')};
+// o outro lado da troca: pelo sub_id; em jogos antigos, a entrada/saída registada logo a seguir/antes no mesmo segundo
+function subPartner(ev){
+ if(!ev||!isMove(ev.event_code))return null;
+ const want=ev.event_code==='ENT'?'SAI':'ENT';
+ if(ev.sub_id)return queue.find(x=>x!==ev&&x.sub_id===ev.sub_id&&x.event_code===want)||null;
+ const i=queue.indexOf(ev),near=ev.event_code==='SAI'?queue.slice(i+1,i+3):queue.slice(Math.max(0,i-2),i).reverse();
+ const c=near.find(x=>isMove(x.event_code));
+ return c&&c.event_code===want&&!c.sub_id&&Number(c.player_id)!==Number(ev.player_id)&&eventPart(c)===eventPart(ev)&&Math.abs(Number(c.game_marker)-Number(ev.game_marker))<=1?c:null;
+}
+// posição atribuída a quem entrou na troca (registada no mesmo instante)
+function subPosition(ent){
+ if(!ent)return null;
+ if(ent.sub_id)return queue.find(x=>x.sub_id===ent.sub_id&&codePos[x.event_code])||null;
+ const n=queue[queue.indexOf(ent)+1];
+ return n&&codePos[n.event_code]&&n.player_id===ent.player_id&&Math.abs(Number(n.game_marker)-Number(ent.game_marker))<=1?n:null;
+}
+function restoreQueue(backup,olds){queue=backup;olds.forEach(([e,o])=>{Object.keys(e).forEach(k=>{if(!(k in o))delete e[k]});Object.assign(e,o)})}
+function openMoveTime(ev){
+ const pr=subPartner(ev),part=eventPart(ev);
+ const sai=ev.event_code==='SAI'?ev:pr,ent=ev.event_code==='ENT'?ev:pr;
+ showModal(pr?'Corrigir o tempo da substituição':'Corrigir o tempo da '+(ev.event_code==='ENT'?'entrada':'saída'),`
+  ${pr?`<div class="small">Esta ${ev.event_code==='ENT'?'entrada':'saída'} faz par com a ${ev.event_code==='ENT'?'saída':'entrada'} do substituto. O novo tempo aplica-se aos dois:</div>
+   <div style="margin:8px 0"><strong>Sai ${esc(nmPl(sai.player_id))}</strong> · <strong>Entra ${esc(nmPl(ent.player_id))}</strong></div>`
+  :`<div class="small">${ev.event_code==='ENT'?'Entrada':'Saída'} de <strong>${esc(nmPl(ev.player_id))}</strong> sem substituto associado. Só pode ser alterada sozinha se não houve troca.</div>
+   <label class="small" style="display:flex;gap:8px;align-items:center;margin:8px 0;font-weight:400" title="Marca só se não houve ninguém a sair/entrar no lugar deste jogador"><input type="checkbox" id="mtAlone"> Sem substituto (início/fim de parte ou expulsão)</label>`}
+  <label class="small">Tempo da ${part}ª parte (mm:ss) <input id="mtTime" style="width:90px" value="${mmss(Math.max(0,Math.round(eventSecond(ev,part))))}"></label>
+  <div style="margin-top:10px"><button id="mtApply" class="btn green" type="button">Aplicar</button></div>`);
+ $('mtApply').onclick=()=>{
+  if(!pr&&!$('mtAlone').checked)return toast('Sem par: confirma "Sem substituto" ou usa "Corrigir substituição" para registar a troca');
+  const sec=parseMMSS($('mtTime').value);if(sec==null)return toast('Formato inválido. Usa mm:ss, por exemplo 12:30');
+  if(sec>partElapsed(part)+1)return toast('Esse tempo ainda não aconteceu na '+part+'ª parte');
+  const moves=[sai,ent,subPosition(ent)].filter(Boolean),backup=queue.slice(),olds=moves.map(e=>[e,{...e}]),before=timelineError();
+  moves.forEach(e=>queue.splice(queue.indexOf(e),1));
+  moves.forEach(e=>Object.assign(e,{part,minute:Math.floor(sec/60),game_marker:markerFor(part,sec),client_timestamp:stampFor(part,sec),corrigido:true}));
+  insertSorted(moves);
+  const err=timelineError();
+  if(err&&err!==before){restoreQueue(backup,olds);return toast('Não foi possível: '+err)}
+  reconcileField();$('modal').style.display='none';saveAll();toast((pr?'Substituição':'Movimento')+' corrigido para '+mmss(sec));
+ };
+}
+function deleteMove(ev){
+ const pr=subPartner(ev),sai=ev.event_code==='SAI'?ev:pr,ent=ev.event_code==='ENT'?ev:pr;
+ if(pr){if(!confirm('Esta '+(ev.event_code==='ENT'?'entrada':'saída')+' faz parte de uma substituição (sai '+nmPl(sai.player_id)+' / entra '+nmPl(ent.player_id)+').\nAnular a substituição inteira?'))return}
+ else if(!confirm((ev.event_code==='ENT'?'Entrada':'Saída')+' de '+nmPl(ev.player_id)+' sem substituto associado (início/fim de parte ou expulsão).\nAnular só este movimento?'))return;
+ const dels=[ev,pr,subPosition(ent)].filter(Boolean),backup=queue.slice(),before=timelineError();
+ dels.forEach(e=>queue.splice(queue.indexOf(e),1));
+ const err=timelineError();
+ if(err&&err!==before){queue=backup;return toast('Não foi possível: '+err)}
+ reconcileField();saveAll();toast(pr?'Substituição anulada':'Movimento anulado');
+}
+// insere mantendo a ordem cronológica (depois dos eventos com o mesmo tempo)
+function insertSorted(evs){for(const ev of evs){let i=queue.length;while(i>0&&queue[i-1].game_marker>ev.game_marker)i--;queue.splice(i,0,ev)}}
+// reproduz entradas/saídas e devolve o primeiro erro de coerência (ou null)
+function timelineError(){
+ const on=new Set();for(const ev of orderedFieldEvents()){
+  const n=Number(ev.player_id);
+  if(ev.event_code==='ENT'){if(on.has(n))return 'O jogador '+n+' já estava em campo nesse momento.';on.add(n);if(on.size>5)return 'Ficariam mais de 5 jogadores em campo.';}
+  else if(ev.event_code==='SAI'){if(!on.has(n))return 'O jogador '+n+' não estava em campo nesse momento.';on.delete(n);}
+ }return null;
+}
+function onAt(gm){const on=new Set();for(const ev of orderedFieldEvents()){
+ if(Number(ev.game_marker)>Number(gm))break;
+ if(ev.event_code==='ENT')on.add(Number(ev.player_id));else if(ev.event_code==='SAI')on.delete(Number(ev.player_id));
+ }return [...on];}
+// refaz o campo a partir dos eventos, mantendo cada jogador no mesmo cartão
+function reconcileField(){
+ const prev=onField.slice();rebuildField();const rebuilt=onField,keep=nulls();
+ prev.forEach((s,i)=>{if(s&&rebuilt.some(r=>r&&r.number===s.number))keep[i]={number:s.number,position:s.position}});
+ rebuilt.forEach(r=>{if(r&&!keep.some(k=>k&&k.number===r.number)){const j=keep.indexOf(null);if(j>-1)keep[j]={number:r.number,position:r.position}}});
+ onField=keep;
+}
+function openFix(){
+ const cp=session.currentPart||(session.part2_start?2:1);
+ const opts='<option value="">— ninguém —</option>'+called().map(p=>`<option value="${p.number}">${p.number} - ${esc(p.name)}</option>`).join('');
+ showModal('Corrigir substituição esquecida',`
+  <div class="small">Regista a substituição (quem sai e quem entra) no momento em que realmente aconteceu. O tempo em jogo dos dois é recalculado.</div>
+  <div class="row"><label class="small">Sai <select id="fxOut">${opts}</select></label><label class="small">Entra <select id="fxIn">${opts}</select></label></div>
+  <div class="row"><label class="small">Parte <select id="fxPart"><option value="1">1ª</option><option value="2">2ª</option></select></label>
+  <label class="small">Tempo da parte (mm:ss) <input id="fxTime" style="width:90px" placeholder="ex. 12:30"></label></div>
+  <label class="small" style="display:flex;gap:8px;align-items:center;margin-top:8px;font-weight:400" title="Só para movimentos sem troca: cinco iniciais, saídas no fim da parte ou expulsão"><input type="checkbox" id="fxAlone"> Sem substituto (início/fim de parte ou expulsão): registar só a entrada ou só a saída</label>
+  <div class="small" id="fxHint" style="margin-top:6px"></div>
+  <div style="margin-top:10px"><button id="fxApply" class="btn green" type="button">Aplicar correção</button></div>`);
+ $('fxPart').value=String(cp);$('fxTime').value=mmss(partElapsed(cp));
+ const hint=()=>{
+  const sec=parseMMSS($('fxTime').value),p=+$('fxPart').value;
+  $('fxHint').textContent=sec==null?'Indica o tempo como mm:ss.':'Em campo nesse instante: '+(onAt(markerFor(p,sec)).map(n=>{const r=ROSTER.find(x=>x.number===n);return n+(r?' '+r.name:'')}).join(', ')||'ninguém');
+ };
+ $('fxPart').onchange=$('fxTime').oninput=hint;hint();
+ $('fxApply').onclick=()=>{
+  const out=$('fxOut').value===''?null:+$('fxOut').value,inn=$('fxIn').value===''?null:+$('fxIn').value,p=+$('fxPart').value,sec=parseMMSS($('fxTime').value);
+  const alone=$('fxAlone').checked;
+  if(out==null&&inn==null)return toast(alone?'Escolhe quem sai ou quem entra':'Escolhe quem sai e quem entra');
+  if(!alone&&(out==null||inn==null))return toast('Uma substituição é sempre um par: escolhe quem sai e quem entra (ou marca "Sem substituto")');
+  if(alone&&out!=null&&inn!=null)return toast('Com "Sem substituto" escolhe só um jogador (ou desmarca a opção)');
+  if(out!=null&&out===inn)return toast('O jogador que sai e o que entra são o mesmo');
+  if(sec==null)return toast('Tempo inválido. Usa mm:ss, por exemplo 12:30');
+  if(sec>partElapsed(p)+1)return toast('Esse tempo ainda não aconteceu na '+p+'ª parte (decorreu '+mmss(partElapsed(p))+')');
+  const NOTE='corrigido manualmente',gm=markerFor(p,sec),news=[],undo=[],backup=queue.slice(),before=timelineError();
+  const on=onAt(gm);
+  if(out!=null&&!on.includes(out))return toast('O jogador '+out+' não estava em campo nesse momento.');
+  if(inn!=null&&on.includes(inn))return toast('O jogador '+inn+' já estava em campo nesse momento.');
+  const ended=!!session['part'+p+'_ended'],endSec=partElapsed(p);
+  // a saída que já estava registada para quem sai (ex.: a saída automática do fim da parte)
+  const s=out!=null?queue.find(e=>e.player_id===out&&e.event_code==='SAI'&&e.game_marker>=gm):null;
+  if(out!=null&&inn==null&&s){
+   // só saída: antecipa a saída já registada, em vez de criar uma segunda
+   undo.push([s,{...s}]);
+   Object.assign(s,{part:p,minute:Math.floor(sec/60),game_marker:gm,client_timestamp:stampFor(p,sec),corrigido:true});
+   queue.splice(queue.indexOf(s),1);insertSorted([s]);
+  }else{
+   if(out!=null)news.push(mkAt(out,'SAI',p,sec,NOTE));
+   if(inn!=null){
+    news.push(mkAt(inn,'ENT',p,sec,NOTE));
+    if(out!=null){
+     const pe=queue.filter(e=>e.player_id===out&&codePos[e.event_code]&&e.game_marker<=gm).pop();
+     if(pe)news.push(mkAt(inn,pe.event_code,p,sec,NOTE));
+     // quem entra sai quando o substituído tinha registada a saída (fim da parte ou troca posterior)
+     if(s){undo.push([s,{...s}]);s.player_id=inn;s.corrigido=true}
+    }else if(ended)news.push(mkAt(inn,'SAI',p,endSec,NOTE)); // parte já terminada: fecha a presença no fim
+   }
+  }
+  if(out!=null&&inn!=null){const sid='sub_'+Math.random().toString(36).slice(2,9);news.forEach(e=>e.sub_id=sid)}
+  insertSorted(news);const err=timelineError();
+  if(err&&err!==before){
+   queue=backup;
+   undo.forEach(([e,o])=>{Object.keys(e).forEach(k=>{if(!(k in o))delete e[k]});Object.assign(e,o)});
+   return toast('Não foi possível: '+err);
+  }
+  reconcileField();$('modal').style.display='none';saveAll();toast('Correção aplicada às '+mmss(sec)+' da '+p+'ª parte');
+ };
+}
+$('fixSubBtn').onclick=openFix;
+$('undoBtn').onclick=()=>{
+ const last=[...queue].reverse().find(e=>e.act_id);
+ if(!last)return toast('Nada para anular');
+ const grp=queue.filter(e=>e.act_id===last.act_id);
+ const desc=grp.map(e=>e.event_sigla+(e.player_id!=null?' '+e.player_id:'')).join(' + ');
+ if(!confirm('Anular o último registo: '+desc+'?'))return;
+ const backup=queue.slice(),before=timelineError();
+ grp.forEach(e=>{const g=goalAssistEvent(e);if(g&&!grp.includes(g))queue.splice(queue.indexOf(g),1);
+  if(e.event_code==='ASS'&&e.goal_event_id){const gl=queue.find(x=>x.event_id===e.goal_event_id);if(gl)delete gl.assist_player_id}
+  queue.splice(queue.indexOf(e),1)});
+ const err=timelineError();if(err&&err!==before){queue=backup;return toast('Não foi possível: '+err)}
+ if(grp.some(e=>isMove(e.event_code)||codePos[e.event_code]))reconcileField();
+ swapIdx=null;saveAll();toast('Anulado: '+desc);
+};
+// botão ⏱ na tabela de eventos: corrigir o tempo de qualquer evento
+document.addEventListener('click',e=>{
+ const b=e.target.closest('.editTime');if(!b)return;
+ const ev=queue[+b.dataset.i];if(!ev)return;
+ if(isMove(ev.event_code))return openMoveTime(ev);
+ const v=prompt('Novo tempo deste evento na '+ev.part+'ª parte (mm:ss):',mmss(Math.max(0,Math.round(ev.game_marker-partBase(ev.part)))));
+ if(v===null)return;
+ const sec=parseMMSS(v);if(sec==null)return toast('Formato inválido. Usa mm:ss, por exemplo 12:30');
+ if(sec>partElapsed(ev.part)+1)return toast('Esse tempo ainda não aconteceu na '+ev.part+'ª parte');
+ const backup=queue.slice(),old={...ev},before=timelineError();
+ queue.splice(queue.indexOf(ev),1);
+ Object.assign(ev,{minute:Math.floor(sec/60),game_marker:markerFor(ev.part,sec),client_timestamp:stampFor(ev.part,sec),corrigido:true});
+ insertSorted([ev]);
+ const err=timelineError();
+ if(err&&err!==before){queue=backup;Object.assign(ev,old);return toast('Não foi possível: '+err)}
+ reconcileField();saveAll();toast('Tempo corrigido para '+mmss(sec));
+});
+
+/* ===== DETALHES DOS GOLOS: forma e local ===== */
+const FORMAS=[['ATQ','Ataque organizado'],['CTR','Contra-ataque'],['PRE','Recuperação alta / pressão'],['ERR','Erro (perda de bola)'],['CAN','Canto'],['LIV','Livre direto'],['L10','Livre de 10 m / penálti'],['LAT','Lançamento lateral'],['LON','Remate de longe'],['REC','Recarga / ressalto'],['GRP','Com guarda-redes avançado'],['OUT','Outro']];
+const formaLabel=c=>(FORMAS.find(f=>f[0]===c)||[])[1]||'';
+// campo 40x20 (equipa a atacar sempre para a direita). pts: [{x,y,s:1 marcado | 0 sofrido}]
+function goalMapSVG(pts,attrs='',heat=''){
+ const heats=[].concat(heat||[]).filter(Boolean);
+ const L='stroke="#111" stroke-width=".14" fill="none"';
+ const dot=p=>{
+  const c=p.c||(p.s?'GOL':'GOS'),x=p.x,y=p.y;
+  if(c==='GOL')return`<circle cx="${x}" cy="${y}" r=".8" fill="#FFD400" stroke="#111" stroke-width=".2"/>`;
+  if(c==='GOS')return`<circle cx="${x}" cy="${y}" r=".8" fill="#111" stroke="#FFD400" stroke-width=".25"/>`;
+  if(c==='RAB')return`<circle cx="${x}" cy="${y}" r=".5" fill="#FFD400" stroke="#111" stroke-width=".15" opacity=".9"/>`;
+  if(c==='RFB')return`<path d="M${x-.5} ${y-.5}L${x+.5} ${y+.5}M${x-.5} ${y+.5}L${x+.5} ${y-.5}" stroke="#111" stroke-width=".22" fill="none"/>`;
+  if(c==='DEF')return`<rect x="${(x-.45).toFixed(2)}" y="${(y-.45).toFixed(2)}" width=".9" height=".9" fill="#FFD400" stroke="#111" stroke-width=".15" opacity=".9"/>`;
+  return`<polygon points="${x},${y-.6} ${x+.6},${y} ${x},${y+.6} ${x-.6},${y}" fill="#111" stroke="#FFD400" stroke-width=".15" opacity=".9"/>`;
+ };
+ const dots=pts.map(dot).join('');
+ return`<svg viewBox="-1 -1.5 42 23" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;max-width:760px;display:block;border:1px solid var(--line);border-radius:6px;background:#fffdf0" ${attrs}><rect x="-1" y="-1.5" width="42" height="23" fill="#fffdf0"/>${heats.map(h=>`<image href="${h}" x="0" y="0" width="40" height="20" preserveAspectRatio="none"/>`).join('')}<rect x="0" y="0" width="40" height="20" ${L}/><line x1="20" y1="0" x2="20" y2="20" ${L}/><circle cx="20" cy="10" r="3" ${L}/><path d="M0 2.5A6 6 0 0 1 6 8.5L6 11.5A6 6 0 0 1 0 17.5" ${L}/><path d="M40 2.5A6 6 0 0 0 34 8.5L34 11.5A6 6 0 0 0 40 17.5" ${L}/><rect x="-0.9" y="8.5" width=".9" height="3" ${L}/><rect x="40" y="8.5" width=".9" height="3" ${L}/>${dots}<text x="20" y="-0.35" font-size="1" text-anchor="middle" font-family="Arial">Atacamos →</text></svg>`;
+}
+function goalAssistEvent(goal){
+ if(!goal||goal.event_code!=='GOL')return null;
+ const linked=queue.filter(e=>e.event_code==='ASS'&&e.goal_event_id===goal.event_id);
+ if(linked.length===1)return linked[0];if(linked.length>1)return null;
+ // Compatibilidade com os registos antigos: verificar estritamente a assistência seguinte.
+ const i=queue.indexOf(goal),next=queue[i+1];
+ return next&&next.event_code==='ASS'&&!next.goal_event_id&&Number(next.game_marker)===Number(goal.game_marker)&&
+  Number(next.part)===Number(goal.part)&&Math.abs(Date.parse(next.client_timestamp)-Date.parse(goal.client_timestamp))<3000?next:null;
+}
+function setGoalAssistant(goal,n){
+ const old=goalAssistEvent(goal);
+ if(n==null){delete goal.assist_player_id;if(old)queue.splice(queue.indexOf(old),1);return;}
+ goal.assist_player_id=n;
+ if(old){old.player_id=n;old.goal_event_id=goal.event_id;return;}
+ const m=eventMeta.ASS;
+ queue.splice(queue.indexOf(goal)+1,0,{event_id:'evt_'+Math.random().toString(36).slice(2,9),session_id:goal.session_id,
+  part:goal.part,client_timestamp:goal.client_timestamp,minute:goal.minute,game_marker:goal.game_marker,
+  player_id:n,event_code:'ASS',event_label:m.label,event_sigla:m.sigla,note:'',rating:'',rating_label:'',goal_event_id:goal.event_id});
+}
+function goalInfo(ev,force=false,newGoal=false){
+ if(!ev)return;
+ const scored=ev.event_code==='GOL';
+ // Duas opções independentes: a assistência e os detalhes da finalização.
+ // O botão ℹ permite sempre editar tudo, mesmo que a pergunta automática esteja desligada.
+ const askExtra=force||(scored?OPTS.goalsFor:OPTS.goalsAgainst);
+ const wantAssist=scored&&(force||OPTS.assists);
+ if(!askExtra&&!wantAssist)return;
+ const ask=force?'both':OPTS.goalAsk;
+ const wantForma=askExtra&&ask!=='local',wantLocal=askExtra&&ask!=='forma';
+ const linked=scored?goalAssistEvent(ev):null,oldAssist=ev.assist_player_id??linked?.player_id??null;
+ const eligible=new Set((newGoal?onField.filter(Boolean).map(x=>Number(x.number)):onAt(Number(ev.game_marker))).filter(n=>n!==Number(ev.player_id)));
+ if(oldAssist!=null)eligible.add(Number(oldAssist));
+ if(!eligible.size)called().forEach(p=>{if(p.number!==Number(ev.player_id))eligible.add(Number(p.number))});
+ const assistants=[...eligible].map(n=>ROSTER.find(x=>Number(x.number)===n)||{number:n,name:'Jogador sem ficha'}).sort((a,b)=>a.name.localeCompare(b.name,'pt'));
+ let forma=ev.forma||'',lx=ev.local_x??null,ly=ev.local_y??null;
+ showModal((scored?'Golo marcado':'Golo sofrido')+' — detalhes (opcional)',`
+  ${wantAssist?`<div class="small"><strong>Quem fez a assistência?</strong> (opcional)</div>
+   <select id="giAssist" aria-label="Jogador que fez a assistência" style="width:100%;margin:6px 0 12px"><option value="">Sem assistência</option>
+    ${assistants.map(p=>`<option value="${p.number}" ${oldAssist!=null&&Number(oldAssist)===Number(p.number)?'selected':''}>${esc(p.number+' - '+p.name)}</option>`).join('')}</select>`:''}
+  ${wantForma||wantLocal?'<div class="small">Podes saltar e preencher depois com o botão ℹ na tabela de eventos.</div>':''}
+  ${wantForma?`<div class="small" style="margin-top:8px">Como foi o golo?</div><div class="row">${FORMAS.map(([c,l])=>`<button class="giForma ${c===forma?'active':''}" data-c="${c}" type="button">${esc(l)}</button>`).join('')}</div>`:''}
+  ${wantLocal?`<div class="small" style="margin-top:10px">${scored?'De onde foi o remate?':'De onde foi o remate do adversário?'} Toca no campo, como se estivéssemos sempre a atacar para a direita.</div><div id="giCourt" style="margin-top:6px"></div>`:''}
+  <div class="row" style="justify-content:flex-end"><button id="giSkip" class="btn warn" type="button">Saltar</button><button id="giSave" class="btn green" type="button">Guardar</button></div>`);
+ const draw=()=>{
+  if(!$('giCourt'))return;
+  $('giCourt').innerHTML=goalMapSVG(lx!=null?[{x:lx,y:ly,s:scored?1:0}]:[]);
+  const svg=$('giCourt').firstElementChild;svg.style.cursor='crosshair';
+  svg.onclick=e=>{const r=svg.getBoundingClientRect();if(!r.width||!r.height)return;
+   lx=Math.min(40,Math.max(0,+((e.clientX-r.left)/r.width*42-1).toFixed(1)));
+   ly=Math.min(20,Math.max(0,+(((e.clientY-r.top)/r.height)*23-1.5).toFixed(1)));draw();};
+ };
+ draw();
+ $('mBody').querySelectorAll('.giForma').forEach(b=>b.onclick=()=>{forma=forma===b.dataset.c?'':b.dataset.c;
+  $('mBody').querySelectorAll('.giForma').forEach(x=>x.classList.toggle('active',x.dataset.c===forma));});
+ $('giSkip').onclick=()=>{$('modal').style.display='none'};
+ $('giSave').onclick=()=>{
+  if(wantAssist){const id=$('giAssist').value,assist=id===''?null:Number(id);
+   if(assist!=null&&(!Number.isInteger(assist)||assist===Number(ev.player_id)||!assistants.some(p=>Number(p.number)===assist)))return toast('Assistente inválido');
+   setGoalAssistant(ev,assist);
+  }
+  if(wantForma){if(forma){ev.forma=forma;ev.forma_label=formaLabel(forma)}else{delete ev.forma;delete ev.forma_label}}
+  if(wantLocal){if(lx!=null){ev.local_x=lx;ev.local_y=ly}else{delete ev.local_x;delete ev.local_y}}
+  $('modal').style.display='none';saveAll();toast('Detalhes do golo guardados');
+ };
+}
+document.addEventListener('click',e=>{const b=e.target.closest('.goalInfoBtn');if(!b)return;const ev=queue[+b.dataset.i];if(!ev)return;if(ev.event_code==='GOL'||ev.event_code==='GOS')goalInfo(ev,true);else shotLoc(ev,true)});
+// remates (RAB, RFB, RSO): um toque no campo grava o local e fecha
+function shotLoc(ev,force){
+ if(!ev)return;
+ if(!force&&!(ev.event_code==='RSO'?OPTS.shotsAgainst:OPTS.shotsFor))return;
+ const name={RAB:'Remate à baliza',RFB:'Remate fora',RSO:'Remate sofrido'}[ev.event_code]||ev.event_label;
+ showModal('Local do remate — '+name,`
+  <div class="small">Toca no campo onde foi o remate${ev.event_code==='RSO'?' do adversário':''}, como se estivéssemos sempre a atacar para a direita. Grava logo ao tocar.</div>
+  <div id="giCourt" style="margin-top:6px"></div>
+  <div class="row" style="justify-content:flex-end"><button id="giSkip" class="btn warn" type="button">Saltar</button>${ev.local_x!=null?'<button id="giClear" class="btn gray" type="button">Apagar local</button>':''}</div>`);
+ const draw=()=>{
+  $('giCourt').innerHTML=goalMapSVG(ev.local_x!=null?[{x:ev.local_x,y:ev.local_y,c:ev.event_code}]:[]);
+  const svg=$('giCourt').firstElementChild;svg.style.cursor='crosshair';
+  svg.onclick=e=>{
+   const r=svg.getBoundingClientRect();if(!r.width)return;
+   ev.local_x=Math.min(40,Math.max(0,+((e.clientX-r.left)/r.width*42-1).toFixed(1)));
+   ev.local_y=Math.min(20,Math.max(0,+(((e.clientY-r.top)/r.height)*23-1.5).toFixed(1)));
+   $('modal').style.display='none';saveAll();
+  };
+ };
+ draw();
+ $('giSkip').onclick=()=>{$('modal').style.display='none'};
+ if($('giClear'))$('giClear').onclick=()=>{delete ev.local_x;delete ev.local_y;$('modal').style.display='none';saveAll()};
+}
+/* ---------- Opções de registo ---------- */
+const OPTS_DEF={shotsFor:true,shotsAgainst:true,goalsFor:true,goalsAgainst:true,assists:true,goalAsk:'both',mapCodes:['GOL','GOS','RAB','RFB','RSO','DEF'],mapView:'pts'};
+function loadOpts(){const o={...OPTS_DEF,...load(K.o,{})};if(!Array.isArray(o.mapCodes))o.mapCodes=OPTS_DEF.mapCodes.slice();if(!['pts','off','def','both'].includes(o.mapView))o.mapView='pts';return o}
+let OPTS=loadOpts();
+function saveOpts(){try{localStorage.setItem(K.o,JSON.stringify(OPTS))}catch{}updOptsLabel();if(typeof renderField==='function')renderField();if(typeof renderGoalsInfo==='function')renderGoalsInfo()}
+function updOptsLabel(){
+ const on=v=>v?'sim':'não',el=$('optsLabel');if(!el)return;
+ el.textContent='Local — remates: '+on(OPTS.shotsFor)+' · remates sofridos: '+on(OPTS.shotsAgainst)+' · golos marcados: '+on(OPTS.goalsFor)+' · golos sofridos: '+on(OPTS.goalsAgainst)+' · assistências: '+on(OPTS.assists);
+}
+function openOpts(){
+ const cb=(k,txt)=>`<label class="small" style="display:flex;gap:8px;align-items:center;margin-top:8px;font-weight:400"><input type="checkbox" data-opt="${k}" ${OPTS[k]?'checked':''}> ${txt}</label>`;
+ showModal('Opções de registo',`
+  <div class="row" style="margin:0 0 6px;justify-content:flex-end"><button id="optAll" class="btn" type="button" title="Liga todas as perguntas ao registar">Selecionar todas</button><button id="optNone" class="btn gray" type="button" title="Desliga todas as perguntas: regista mais depressa e preenches depois na tabela de eventos">Limpar todas</button></div>
+  <div class="section-title" style="margin-top:0">Remates</div>
+  ${cb('shotsFor','Perguntar o <strong>local</strong> dos remates à baliza e fora')}
+  ${cb('shotsAgainst','Perguntar o <strong>local</strong> dos remates sofridos')}
+  <div class="section-title" style="margin-top:12px">Golos</div>
+  ${cb('goalsFor','Abrir detalhes ao registar um <strong>golo marcado</strong>')}
+  ${cb('goalsAgainst','Abrir detalhes ao registar um <strong>golo sofrido</strong>')}
+  <label class="small" style="display:flex;gap:8px;align-items:center;margin-top:8px;font-weight:400">Nos golos, perguntar
+   <select id="optAsk"><option value="both">Forma e local</option><option value="local">Só o local</option><option value="forma">Só a forma</option></select></label>
+  <div class="section-title" style="margin-top:12px">Assistências</div>
+  ${cb('assists','Perguntar <strong>quem fez a assistência</strong> ao registar um golo marcado')}
+  <div class="small" style="margin-top:4px">Esta opção é independente dos detalhes dos golos. As assistências continuam a poder ser editadas pelo botão ℹ na tabela de eventos.</div>`);
+ $('optAsk').value=OPTS.goalAsk;
+ $('mBody').querySelectorAll('[data-opt]').forEach(i=>i.onchange=()=>{OPTS[i.dataset.opt]=i.checked;saveOpts()});
+ $('optAsk').onchange=()=>{OPTS.goalAsk=$('optAsk').value;saveOpts()};
+ const all=v=>{$('mBody').querySelectorAll('[data-opt]').forEach(i=>{i.checked=v;OPTS[i.dataset.opt]=v});saveOpts();toast(v?'Todas as opções ligadas':'Todas as opções desligadas')};
+ $('optAll').onclick=()=>all(true);$('optNone').onclick=()=>all(false);
+}
+$('optsBtn').onclick=openOpts;updOptsLabel();
+let lastGI={};
+const MAP_TYPES=[['GOL','Golos marcados'],['GOS','Golos sofridos'],['RAB','Remates à baliza'],['RFB','Remates fora'],['RSO','Remates sofridos'],['DEF','Defesas do GR (consideradas na área)']];
+function buildMapFilter(){
+ const chk=OPTS.mapCodes;
+ $('mapFilter').innerHTML=`<div class="small"><strong>Mostrar no mapa</strong></div>
+  <div class="row" style="margin-top:4px;gap:12px">${MAP_TYPES.map(([c,l])=>`<label class="small" title="${l}" style="font-weight:400;display:flex;gap:4px;align-items:center;white-space:nowrap"><input type="checkbox" data-mc="${c}" ${chk.includes(c)?'checked':''}> <strong>${c}</strong></label>`).join('')}</div>
+  <div class="row" style="margin-top:6px;flex-wrap:nowrap">
+   <label class="small" title="Pontos, calor ofensivo (amarelo), calor defensivo (preto) ou os dois em simultâneo" style="font-weight:400;display:flex;gap:4px;align-items:center;white-space:nowrap">Vista <select id="mapViewSel" style="padding:4px"><option value="pts">Pontos</option><option value="off">Calor ofensivo</option><option value="def">Calor defensivo</option><option value="both">Calor ofensivo + defensivo</option></select></label>
+   <label class="small" title="Filtra o mapa por parte" style="font-weight:400;display:flex;gap:4px;align-items:center;white-space:nowrap">Parte <select id="mapPartSel" style="padding:4px"><option value="0">Ambas</option><option value="1">1ª</option><option value="2">2ª</option></select></label>
+   <label class="small" title="Filtra o mapa por jogador (Equipa = ações sem jogador)" style="font-weight:400;display:flex;gap:4px;align-items:center;flex:1;min-width:0">Jogador <select id="mapPlayerSel" style="padding:4px;flex:1;min-width:0;max-width:100%"><option value="">Todos</option><option value="team">Equipa</option></select></label>
+  </div>`;
+ $('mapViewSel').value=OPTS.mapView;
+}
+function setMapCodes(codes){
+ OPTS.mapCodes=codes;saveOpts();
+ $('mapFilter').querySelectorAll('[data-mc]').forEach(i=>i.checked=codes.includes(i.dataset.mc));
+ renderGoalsInfo();
+}
+$('mapFilter').addEventListener('change',e=>{
+ if(e.target.dataset.mc!==undefined){setMapCodes(MAP_TYPES.map(t=>t[0]).filter(c=>$('mapFilter').querySelector(`[data-mc="${c}"]`).checked));return}
+ if(e.target.id==='mapViewSel'){OPTS.mapView=e.target.value;saveOpts();renderGoalsInfo();return}
+ if(e.target.id==='mapPartSel'||e.target.id==='mapPlayerSel')renderGoalsInfo();
+});
+// mapa de calor: soma de gaussianas (sigma 2,2 m) numa grelha de 160x80 sobre o campo 40x20
+function heatGrid(pts,W=160,H=80,sigma=2.2){
+ const g=new Float32Array(W*H),cw=40/W,ch=20/H,rx=Math.ceil(3*sigma/cw),ry=Math.ceil(3*sigma/ch);
+ pts.forEach(([x,y])=>{
+  const ci=Math.floor(x/cw),cj=Math.floor(y/ch);
+  for(let j=Math.max(0,cj-ry);j<=Math.min(H-1,cj+ry);j++)for(let i=Math.max(0,ci-rx);i<=Math.min(W-1,ci+rx);i++){
+   const dx=(i+.5)*cw-x,dy=(j+.5)*ch-y;g[j*W+i]+=Math.exp(-(dx*dx+dy*dy)/(2*sigma*sigma));
+  }
+ });
+ let max=0;for(const v of g)if(v>max)max=v;
+ return{g,W,H,max};
+}
+// Defesa do GR: conta sempre como ação dentro da nossa área (baliza em x=0). A posição é só para o mapa
+// (não se grava no evento) e espalha-se de forma fixa à volta de (3 , 10) para os pontos não ficarem todos sobrepostos.
+function defPos(e){
+ const i=Math.max(0,queue.filter(q=>q.event_code==='DEF').indexOf(e)),a=i*2.399963,r=Math.min(2.4,0.4+0.3*i);
+ return[+Math.min(5.2,Math.max(0.8,3+r*Math.cos(a))).toFixed(2),+Math.min(12.5,Math.max(7.5,10+1.2*r*Math.sin(a))).toFixed(2)];
+}
+const atLoc=e=>e.local_x!=null?[e.local_x,e.local_y]:(e.event_code==='DEF'?defPos(e):null);
+const heatCache=new Map();
+function heatURL(pts,kind,scale=1){
+ const key=kind+'|'+scale+'|'+pts.map(p=>p.join(',')).join(';');
+ if(heatCache.has(key))return heatCache.get(key);
+ const{g,W,H,max}=heatGrid(pts);let url='';
+ if(max){
+  const cv=document.createElement('canvas');cv.width=W;cv.height=H;
+  const c=cv.getContext('2d'),im=c.createImageData(W,H);
+  for(let k=0;k<g.length;k++){
+   const t=Math.pow(g[k]/max,.7),o=k*4;
+   if(kind==='off'){im.data[o]=Math.round(232-22*t);im.data[o+1]=Math.round(170-35*t);im.data[o+2]=0}  // amarelo torrado (E8AA00 -> D28700)
+   else{im.data[o]=17;im.data[o+1]=17;im.data[o+2]=17}                                     // preto
+   im.data[o+3]=Math.round(Math.min(1,t*1.25)*(kind==='off'?240:185)*scale);
+  }
+  c.putImageData(im,0,0);url=cv.toDataURL('image/png');
+ }
+ if(heatCache.size>=12)heatCache.delete(heatCache.keys().next().value);
+ heatCache.set(key,url);return url;
+}
+function setHTML(id,h){if(lastGI[id]!==h){$(id).innerHTML=h;lastGI[id]=h}}
+let mapPlayersSig='';
+function renderGoalsInfo(){
+ if(!$('goalsInfo')||!$('mapPartSel'))return;
+ // sem perguntas de local/forma ligadas e sem nenhum golo/remate com local ou forma, o resumo de golos e o mapa não têm nada para mostrar
+ const used=OPTS.shotsFor||OPTS.shotsAgainst||OPTS.goalsFor||OPTS.goalsAgainst||queue.some(e=>['GOL','GOS','RAB','RFB','RSO'].includes(e.event_code)&&(e.local_x!=null||e.forma));
+ $('goalsInfo').style.display=used?'':'none';
+ if(!used)return;
+ const gs=queue.filter(e=>e.event_code==='GOL'),gc=queue.filter(e=>e.event_code==='GOS');
+ const list=a=>{const c={};a.forEach(e=>{const k=e.forma_label||'sem indicação';c[k]=(c[k]||0)+1});return Object.entries(c).sort((x,y)=>y[1]-x[1]).map(([k,n])=>`<div class="small">${esc(k)} <strong>×${n}</strong></div>`).join('')||'<div class="small muted">—</div>'};
+ const SC=['GOL','GOS','RAB','RFB','RSO'],tot={},loc={};
+ queue.forEach(e=>{if(SC.includes(e.event_code)){tot[e.event_code]=(tot[e.event_code]||0)+1;if(e.local_x!=null)loc[e.event_code]=(loc[e.event_code]||0)+1}});
+ const sh=['RAB','RFB','RSO'].map(c=>`<div class="small">${eventMeta[c].label.replace(' (adversário)','')} <strong>${loc[c]||0}/${tot[c]||0}</strong> com local</div>`).join('');
+ setHTML('giScored',`<div class="small"><strong>Golos marcados (${gs.length})</strong></div>${list(gs)}`);
+ setHTML('giConceded',`<div class="small"><strong>Golos sofridos (${gc.length})</strong></div>${list(gc)}`);
+ setHTML('giShots',`<div class="small"><strong>Remates localizados</strong></div>${sh}`);
+ // lista de jogadores do filtro
+ const sig=ROSTER.map(r=>r.number+r.name).join('|');
+ if(sig!==mapPlayersSig){const cur=$('mapPlayerSel').value;$('mapPlayerSel').innerHTML='<option value="">Todos</option><option value="team">Equipa</option>'+ROSTER.map(r=>`<option value="${r.number}">${r.number} - ${esc(r.name)}</option>`).join('');$('mapPlayerSel').value=cur;mapPlayersSig=sig}
+ const view=OPTS.mapView||'pts',HEAT={off:['GOL','RAB','RFB'],def:['GOS','RSO','DEF']};
+ const part=+$('mapPartSel').value,pl=$('mapPlayerSel').value,codes=view==='pts'?OPTS.mapCodes:view==='both'?[...HEAT.off,...HEAT.def]:HEAT[view];
+ const located=queue.filter(e=>[...SC,'DEF'].includes(e.event_code)&&atLoc(e));
+ const shown=located.filter(e=>codes.includes(e.event_code)&&(!part||e.part===part)&&(pl===''||(pl==='team'?e.player_id==null:String(e.player_id)===pl)));
+ // nas vistas de calor os tipos são fixos (ofensivo/defensivo): as caixas ficam inativas
+ $('mapFilter').querySelectorAll('[data-mc]').forEach(i=>{i.disabled=view!=='pts';i.parentElement.style.opacity=view==='pts'?'':'.4'});
+ if($('mapViewSel').value!==view)$('mapViewSel').value=view;
+ if(view==='pts'){
+  setHTML('giMap',goalMapSVG(shown.map(e=>{const [x,y]=atLoc(e);return{x,y,c:e.event_code}})));
+  setHTML('giMapNote',`A mostrar <strong>${shown.length}</strong> de ${located.length} pontos · <strong>GOL</strong> círculo grande amarelo · <strong>GOS</strong> círculo grande preto · <strong>RAB</strong> círculo pequeno · <strong>RFB</strong> ✕ · <strong>RSO</strong> ◆ · <strong>DEF</strong> ■ (na área)`);
+ }else if(view==='both'){
+  const offP=shown.filter(e=>HEAT.off.includes(e.event_code)),defP=shown.filter(e=>HEAT.def.includes(e.event_code));
+  setHTML('giMap',goalMapSVG([],'',[heatURL(defP.map(atLoc),'def',.9),heatURL(offP.map(atLoc),'off',1)]));
+  const sw=c=>`<span style="display:inline-block;width:10px;height:10px;background:${c};border:1px solid #111;vertical-align:middle"></span>`;
+  setHTML('giMapNote',`${sw('#E0A000')} <strong>Beira-Mar</strong> (GOL, RAB, RFB): <strong>${offP.length}</strong> ações · ${sw('#111')} <strong>Adversário</strong> (GOS, RSO, DEF): <strong>${defP.length}</strong> ações · cada cor é relativa ao seu próprio máximo`);
+ }else{
+  setHTML('giMap',goalMapSVG([],'',heatURL(shown.map(atLoc),view)));
+  setHTML('giMapNote',`Mapa de calor <strong>${view==='off'?'ofensivo':'defensivo'}</strong> (${HEAT[view].filter(c=>c!=='DEF'||shown.some(e=>e.event_code==='DEF')).join(', ')}): <strong>${shown.length}</strong> ações com local · cor mais forte = mais ações nessa zona (relativo ao máximo)`);
+ }
+}
+buildMapFilter();
+
+/* ---------- Offline: guarda a app e os gráficos no browser depois da 1.ª visita (precisa do sw.js ao lado) ---------- */
+if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(()=>{});
+
 /* ---------- Init ---------- */
 (async function init(){
  try{
   const resp=await fetch('atletas.csv',{cache:'no-store'});
-  if(resp.ok){const rows=rowsToRoster(splitCSV(await resp.text()));if(rows.length){ROSTER=rows;localStorage.setItem(K.r,JSON.stringify(ROSTER))}}
+  // o plantel vem sempre do atletas.csv do site; durante um jogo com eventos mantém-se o plantel desse jogo
+  if(resp.ok&&(!ROSTER.length||!queue.length)){const rows=rowsToRoster(splitCSV(await resp.text()));if(rows.length){ROSTER=rows;mergeGuests();localStorage.setItem(K.r,JSON.stringify(ROSTER))}}
  }catch(e){}
- if(!ROSTER.length)toast('Não foi possível carregar o atletas.csv (abre a página via servidor, não diretamente do ficheiro)');
- defSession();fixField();fillInputs();initCharts();renderAll();
+ if(!ROSTER.length)toast('Não foi possível carregar o atletas.csv (abre a página pelo endereço do site)');
+ defSession();fixField();fillInputs();updateGraphLimitNote();initCharts();renderAll();
  if(session.clockRunning)lock();
+ let tick=0;
  setInterval(()=>{
-  renderLive();updTimes();renderStats();renderSummary();
-  if(currentAbsMin()!==lastMin||queue.length!==lastQ)renderCharts();
+  tick++;renderLive();updTimes();
+  // só redesenha tabelas, resumo e gráficos quando há eventos novos, a cada minuto de jogo, ou (gráfico de tempo) a cada 10 s
+  if(currentAbsMin()!==lastMin||queue.length!==lastQ){renderStats();renderSummary();renderCharts()}
+   else if(session.clockRunning&&tick%10===0)refreshTimeCharts();
+   if(session.clockRunning){session._saved_at=Date.now();try{localStorage.setItem(K.s,JSON.stringify(session))}catch(e){console.warn(e)}}
  },1000);
 })();
 </script>
