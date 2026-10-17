@@ -270,7 +270,7 @@ canvas{width:100%!important;height:300px!important}
 
 <script>
 /* ===== ÚNICA LINHA A ALTERAR PARA OUTRO ESCALÃO ===== */
-const ESCALAO='Juvenis 2026/27';
+const ESCALAO='Iniciados A e Juvenis 2026/27';
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const pad=n=>String(n).padStart(2,'0');
@@ -947,6 +947,12 @@ $('legendBtn').onclick=()=>{
 };
 
 /* ---------- Ações no campo ---------- */
+// leva o ecrã até um elemento, descontando a barra do relógio fixa no topo (igual em PC, tablet e telemóvel)
+function scrollToEl(el){
+ if(!el)return;
+ requestAnimationFrame(()=>{const bar=document.querySelector('.clockbar'),off=(bar?bar.offsetHeight:0)+8;
+  window.scrollTo({top:Math.max(0,el.getBoundingClientRect().top+window.scrollY-off),behavior:'smooth'})});
+}
 function enter(num){
  fixField();
  if(inField(num))return toast('Já em campo');
@@ -957,7 +963,7 @@ function enter(num){
    add(old.number,'SAI');onField[swapIdx]={number:num,position:old.position};add(num,'ENT');
    if(old.position)add(num,posCode[old.position]);
    queue.slice(k).forEach(e=>e.sub_id=sid);
-   swapIdx=null;saveAll();return toast('Troca feita');
+   const slot=swapIdx;swapIdx=null;saveAll();scrollToEl($('onField').children[slot]||$('onField'));return toast('Troca feita');
   }
   swapIdx=null;
  }
@@ -981,7 +987,7 @@ document.addEventListener('click',e=>{
  if(b=t.closest('.restoreBtn')){const n=+b.dataset.num;session.absent=absent().filter(x=>x!==n);saveAll();return}
  if(b=t.closest('.addFieldBtn'))return enter(+b.dataset.num);
  if(b=t.closest('.pos-btn')){const i=+b.dataset.idx;if(onField[i]){onField[i].position=b.dataset.pos;add(onField[i].number,posCode[b.dataset.pos]);saveAll()}return}
- if(b=t.closest('.swapBtn')){const i=+b.dataset.idx;swapIdx=swapIdx===i?null:i;renderRoster();renderField();if(swapIdx!==null)toast('Escolhe nos convocados quem entra');return}
+ if(b=t.closest('.swapBtn')){const i=+b.dataset.idx;swapIdx=swapIdx===i?null:i;renderRoster();renderField();if(swapIdx!==null){toast('Escolhe nos convocados quem entra');scrollToEl($('roster').closest('.card'))}return}
  if(b=t.closest('.slotRemove')){const i=+b.dataset.idx,en=onField[i];if(en)add(en.number,'SAI');onField[i]=null;swapIdx=null;saveAll();return}
  if((b=t.closest('.event-btn,[data-team]'))&&!session.currentPart)return toast(session.part1_ended&&!session.part2_start?'Intervalo: inicia a 2ª parte antes de registar ações':session.part2_ended?'O jogo terminou. Para acrescentar eventos usa a secção 6 ou as correções':'Inicia a 1ª parte antes de registar ações');
  if(b=t.closest('.event-btn')){const n=+b.dataset.num,c=b.dataset.code;if(c==='ASS')return assistBtn(n);if(c==='GOL')goal(n);else{add(n,c);saveAll();if(c==='RAB'||c==='RFB')shotLoc(queue[queue.length-1])}return}
