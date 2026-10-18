@@ -12,6 +12,13 @@ h1{font-size:clamp(22px,4.2vw,38px);margin:0;letter-spacing:.2px;line-height:1.1
 .card{background:var(--card);padding:14px;border-radius:8px;border:1px solid var(--line);border-top:4px solid var(--y);box-shadow:0 1px 3px rgba(0,0,0,.08);margin-bottom:12px}
 .section-title{font-size:15px;font-weight:800;margin-bottom:8px}
 label{font-weight:700}
+.infoRow{display:grid;grid-template-columns:minmax(120px,1.6fr) 140px 104px 82px minmax(90px,1.1fr) minmax(90px,1.1fr) 84px minmax(100px,1fr) 118px;gap:8px;margin-top:8px;align-items:center}
+.infoRow>*{min-width:0;width:100%;box-sizing:border-box}
+.durBox{display:flex;align-items:center;gap:4px;border:1px solid #bdb48a;border-radius:6px;padding:0 8px;background:#fff;font-size:13px;font-weight:400;color:#4a4a4a;height:100%;white-space:nowrap}
+.durBox input{border:none;width:2.2em;padding:8px 0;text-align:right;font-weight:700;color:#111;background:transparent;-moz-appearance:textfield}
+.durBox input:focus{outline:none}.durBox:focus-within{outline:2px solid #FFD400}
+@media(max-width:1100px){.infoRow{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}}
+
 input,select,button{padding:8px;border-radius:6px;border:1px solid #bdb48a;font-size:15px}
 .row,.manual-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px}
 .players{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
@@ -135,15 +142,16 @@ canvas{width:100%!important;height:300px!important}
 
 <div class="card">
   <div class="section-title">2. Informação do jogo</div>
-  <div class="row">
-    <input id="opponent" title="Nome da equipa adversária" placeholder="Equipa adversária" style="width:200px">
-    <input id="date" type="date">
-    <input id="time" type="time">
-    <input id="location" placeholder="Local" style="width:200px">
-    <input id="competition" placeholder="Competição">
-    <input id="round" placeholder="Jornada" style="width:90px">
-    <input id="recorder" placeholder="Registado por" title="Quem regista este jogo (fica gravado no ficheiro do jogo)" style="width:150px">
-    <label class="small" title="Duração de cada parte, usada nas escalas dos gráficos">Duração da parte (min) <input id="partMin" type="number" min="1" max="60" value="25" style="width:70px"></label>
+  <div class="infoRow">
+    <input id="opponent" title="Nome da equipa adversária" placeholder="Equipa adversária">
+    <input id="date" type="date" title="Data do jogo">
+    <input id="time" type="time" title="Hora do jogo">
+    <select id="homeAway" title="Jogamos em casa ou fora: define a ordem do resultado (equipa da casa primeiro)"><option value="casa">Casa</option><option value="fora">Fora</option></select>
+    <input id="location" placeholder="Local" title="Pavilhão / local do jogo">
+    <input id="competition" placeholder="Competição" title="Competição">
+    <input id="round" placeholder="Jornada" title="Jornada">
+    <input id="recorder" placeholder="Registado por" title="Quem regista este jogo (fica gravado no ficheiro do jogo)">
+    <label class="durBox" title="Duração de cada parte em minutos (por defeito 25). A 2ª parte começa neste minuto nos gráficos">Parte <input id="partMin" type="number" min="1" max="60" value="25"> min</label>
   </div>
 </div>
 
@@ -160,7 +168,7 @@ canvas{width:100%!important;height:300px!important}
   <div class="summary-grid">
     <div class="summary-box"><div class="small">Parte atual</div><div id="livePart" class="big">—</div></div>
     <div class="summary-box"><div class="small">Tempo decorrido</div><div id="liveElapsedPart" class="big">00:00</div></div>
-    <div class="summary-box"><div class="small">Resultado</div><div id="liveScore" class="big">0 - 0</div></div>
+    <div class="summary-box" title="Resultado com a equipa da casa primeiro (muda em Casa/Fora, na secção 2)"><div class="small">Resultado <span id="liveScoreTeams" style="font-weight:400"></span></div><div id="liveScore" class="big">0 - 0</div></div>
     <div class="summary-box" id="foulBox" title="Faltas da parte atual: sofridas (FSO) - cometidas (FCO). A partir da 5.ª falta cometida, cada nova falta dá livre direto ao adversário"><div class="small">Faltas da parte <span style="font-weight:400">(sofridas - cometidas)</span></div><div id="liveFouls" class="big">0 - 0</div><div id="liveFoulsNote" class="small"></div></div>
   </div>
 </div>
@@ -277,7 +285,7 @@ canvas{width:100%!important;height:300px!important}
 
 <script>
 /* ===== ÚNICA LINHA A ALTERAR PARA OUTRO ESCALÃO ===== */
-const ESCALAO='Iniciados A e Juvenis 2026/27';
+const ESCALAO='Infantis A e Juvenis 2026/27';
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const pad=n=>String(n).padStart(2,'0');
@@ -347,11 +355,11 @@ function fixField(){
 const absent=()=>session.absent||[];
 const called=()=>ROSTER.filter(p=>!absent().includes(p.number));
 const inField=n=>onField.some(s=>s&&s.number===n);
-const ids=['opponent','date','time','location','competition','round','recorder','partMin'];
+const ids=['opponent','homeAway','date','time','location','competition','round','recorder','partMin'];
 const RECORDER_KEY='futsal:recorder';
 function fillInputs(){
  if(!session.recorder){try{session.recorder=localStorage.getItem(RECORDER_KEY)||''}catch{}}
- ids.forEach(i=>$(i).value=session[i]??(i==='partMin'?25:''));
+ ids.forEach(i=>$(i).value=session[i]??(i==='partMin'?25:i==='homeAway'?'casa':''));
 }
 function updSess(){
  if(!$('opponent'))return;
@@ -597,9 +605,10 @@ function renderFilter(){
  $('evFilter').value=cur;
 }
 function renderLive(){
- const cp=session.currentPart||null,pt=cp?cp+'ª Parte':'—',el=cp?fmt(partElapsed(cp)):'00:00',sc=score(),st=sc.marcados+' - '+sc.sofridos;
+ const cp=session.currentPart||null,pt=cp?cp+'ª Parte':'—',el=cp?fmt(partElapsed(cp)):'00:00',sc=score(),away=session.homeAway==='fora',st=away?sc.sofridos+' - '+sc.marcados:sc.marcados+' - '+sc.sofridos;
  const fp=e=>(typeof eventPart==='function'?eventPart(e):e.part)===(cp||1),fouls=queue.filter(e=>e.event_code==='FCO'&&fp(e)).length,foulsS=queue.filter(e=>e.event_code==='FSO'&&fp(e)).length;
  $('livePart').textContent=pt;$('liveElapsedPart').textContent=el;$('liveScore').textContent=st;
+ {const adv=(session.opponent||'').trim()||'Adversário',bm='Beira-Mar';$('liveScoreTeams').textContent='('+(away?adv+' - '+bm:bm+' - '+adv)+')'}
  $('liveFouls').textContent=foulsS+' - '+fouls;
  $('liveFoulsNote').textContent=[fouls>=5?'livres diretos contra':'',foulsS>=5?'livres diretos a favor':''].filter(Boolean).join(' · ');
  $('foulBox').classList.toggle('foul',fouls>=5);
@@ -660,11 +669,10 @@ function graphBucket(ev){
 function updateGraphLimitNote(){
  const el=$('graphTimeNote');if(!el)return;
  const n=graphPeriodMinutes();
- const t='Tempo em jogo e Entradas/Saídas: escala fixa de '+n+' min por parte (a 2ª parte começa sempre aos '+n+' min; o tempo adicional fica no último minuto de cada parte). Intensidade e Eventos ao longo do tempo: tempo real em que as ações aconteceram.';
+ const t='A 2ª parte começa sempre aos '+n+' min (Duração da parte). Tempo em jogo e Entradas/Saídas: o tempo adicional fica no último minuto de cada parte. Intensidade e Eventos ao longo do tempo: cada ação no minuto em que aconteceu dentro da sua parte.';
  el.title=t;
  ['chartPlayerMinutes','chartEntSai'].forEach(id=>{const c=$(id);if(c)c.title=t});
- const r='Tempo real: a 2ª parte começa quando acabou a 1ª ('+mmss(partElapsed(1))+').';
- ['chartIntensity','chartEventsTimeline'].forEach(id=>{const c=$(id);if(c)c.title=r});
+ ['chartIntensity','chartEventsTimeline'].forEach(id=>{const c=$(id);if(c)c.title=t});
 }
 
 const EV_CATS=['Entradas/Saídas','Golos','Remates','Recuperações/Perdas','Faltas','Defesa do GR','Desconto de tempo / Pausa'];
@@ -716,8 +724,9 @@ const RADAR_STYLES=[
 let radarSel=new Set();
 
 // tempo real desde o início do jogo: a 2ª parte começa no fim real da 1ª
-const realSec=ev=>(eventPart(ev)===2?partElapsed(1):0)+eventSecond(ev);
-const realTotalMin=()=>Math.max(2*graphPeriodMinutes(),Math.ceil((partElapsed(1)+partElapsed(2))/60));
+// tempo da ação dentro da sua parte, sem comprimir; a 2ª parte começa sempre na "Duração da parte (min)"
+const realSec=ev=>(eventPart(ev)===2?graphPeriodMinutes()*60:0)+eventSecond(ev);
+const realTotalMin=()=>Math.max(2*graphPeriodMinutes(),Math.ceil(graphPeriodMinutes()+partElapsed(2)/60));
 const halfTimeLinePlugin={
  id:'halfTimeLine',
  afterDraw(chart){
@@ -863,7 +872,7 @@ function updateEventsTimeline(){
    pointRadius:7,pointHoverRadius:9,pointBorderWidth:2};
  });
  charts.evTimeline.options.scales.x.max=total;
- charts.evTimeline.$half=partElapsed(1)/60;
+ charts.evTimeline.$half=graphPeriodMinutes();
  charts.evTimeline.options.plugins.tooltip.callbacks.label=c=>{
   const d=c.raw;
   return c.dataset.label+' - '+d.part+'\u00aa parte, '+fmt(d.seconds);
@@ -911,7 +920,7 @@ function renderCharts(){
  charts.int.data.labels=attack.map((_,i)=>(i+1)+"'");
  charts.int.data.datasets[0].data=attack;
  charts.int.data.datasets[1].data=defense;
- charts.int.$half=partElapsed(1)/60-.5;
+ charts.int.$half=graphPeriodMinutes()-.5;
  updateRadar();updateEventsTimeline();
  [charts.act,charts.int].forEach(c=>c?.update('none'));
  lastMin=currentAbsMin();lastQ=queue.length;
@@ -934,7 +943,7 @@ function pick(title,opts,cb){
 $('mClose').onclick=()=>$('modal').style.display='none';
 const GUIDE=[
  ['1. Essencial — durante o jogo','Precisas disto em todos os jogos.',[
-  ['Informação do jogo','Na secção 2 preenche o adversário, a data, a competição, quem regista e a duração de cada parte.'],
+  ['Informação do jogo','Na secção 2 preenche o adversário, se jogamos em <strong>Casa</strong> ou <strong>Fora</strong> (o resultado mostra sempre a equipa da casa primeiro), a data, a competição, quem regista e a duração de cada parte.'],
   ['Convocados','Na secção 3 aparecem todos os atletas, em cartões pequenos. Usa <strong>Retirar</strong> nos que não estão convocados (e <strong>Repor</strong> para voltar atrás). <strong>Esconder</strong> recolhe a lista; ao carregar em Trocar ela volta a aparecer.'],
   ['Novo Atleta (outros escalões)','<strong>Novo Atleta</strong> cria o perfil na hora (número, nome e foto, que podes tirar no momento). Sem foto, fica com uma imagem amarela com riscas pretas e um vulto. Fica guardado no jogo e em <strong>Usados recentemente</strong>: no jogo seguinte basta um toque (o ✕ apaga-o dessa lista). <strong>Retirar</strong> tira-o só do jogo; no <strong>Novo jogo</strong> sai sozinho.'],
   ['Cinco iniciais e relógio','Carrega em <strong>Entrar</strong> em cinco jogadores e depois em <strong>Início 1ª Parte</strong>. O relógio só arranca com jogadores em campo.'],
@@ -942,7 +951,7 @@ const GUIDE=[
   ['Substituições','<strong>Trocar</strong> no jogador que sai e depois <strong>Entrar</strong> no que entra. <strong>Sair</strong> só tira o jogador.'],
   ['Anular última ação','<strong>↶ Anular última ação</strong> (barra do relógio) desfaz o último toque: um evento, uma troca inteira, uma entrada ou saída.'],
   ['Partes','<strong>Fim 1ª Parte</strong> → <strong>Início 2ª Parte</strong> → <strong>Fim 2ª Parte</strong>. <strong>Pausar/Retomar</strong> para tempo parado. A barra do relógio mostra a parte, o tempo, o resultado e as faltas da parte (sofridas - cometidas), que fica a vermelho a partir da 5.ª falta cometida.'],
-  ['Guardar','Ao intervalo e no fim a app pergunta se queres guardar (ou usa <strong>Guardar jogo</strong>): descarrega um .json com tudo, já com o nome AAAA-MM-DD_Escalão_Adversário. Põe-no na pasta partilhada do escalão.']]],
+  ['Guardar','Ao intervalo e no fim a app pergunta se queres guardar (ou usa <strong>Guardar jogo</strong>): descarrega um .json com tudo, já com o nome AAAA-MM-DD_Escalão_Adversário_C (ou _F). Põe-no na pasta partilhada do escalão.']]],
  ['2. Importante — corrigir erros','Para quando algo foi registado mal ou esquecido.',[
   ['Corrigir substituição','Esqueceste-te de uma troca? Indica quem sai, quem entra e o minuto real. É sempre em par; só os cinco iniciais, as saídas no fim da parte ou uma expulsão podem ir sozinhos, marcando "Sem substituto".'],
   ['Corrigir o tempo de um evento','Na tabela de eventos (secção 7), botão <strong>⏱</strong>. Numa entrada/saída de uma troca, o tempo muda para quem sai e quem entra ao mesmo tempo.'],
@@ -955,7 +964,7 @@ const GUIDE=[
   ['Resumo do jogo','Golos marcados e sofridos por forma, e remates com local. Só aparece quando há perguntas de local/forma ligadas nas opções de registo ou golos/remates com local ou forma já registados.'],
   ['Mapa do campo','Escolhe o que mostrar (GOL, GOS, RAB, RFB, RSO, DEF), a parte e o jogador. Em <strong>Vista</strong>: pontos, calor ofensivo (amarelo), calor defensivo (preto) ou os dois.'],
   ['Estatísticas por jogador','Tempo em jogo, golos, assistências, remates, <strong>eficácia</strong> (golos ÷ remates), recuperações, perdas e faltas. <strong>Env. of.</strong> (GOL, ASS, RAB, RFB, FSO, PER), <strong>Env. def.</strong> (REC, FCO) e <strong>Env. total</strong> contam a participação do jogador nas ações; a % ao lado é a fatia das ações da equipa em que participou enquanto esteve em campo. O <strong>Índice</strong> mede o valor das ações (golo +3, assistência +2, remate à baliza e recuperação +1, falta sofrida e remate fora +0,5, perda −1, falta cometida −0,5); os pesos mudam-se em ⚙ Opções de registo. Em <strong>Por 40 min</strong> os valores ficam comparáveis entre quem jogou pouco e muito.'],
-  ['Gráficos','Tempo por jogador, principais ações, intensidade ofensiva vs defensiva, entradas e saídas, radar para comparar jogadores e eventos ao longo do tempo. Tempo em jogo e Entradas/Saídas usam uma escala fixa (a 2ª parte começa sempre aos 25 min); Intensidade e Eventos ao longo do tempo mostram o tempo real em que as ações aconteceram. O ⓘ por baixo dos gráficos explica.'],
+  ['Gráficos','Tempo por jogador, principais ações, intensidade ofensiva vs defensiva, entradas e saídas, radar para comparar jogadores e eventos ao longo do tempo. Em todos os gráficos a 2ª parte começa no valor da <strong>Duração da parte (min)</strong>. Em Tempo em jogo e Entradas/Saídas o tempo adicional fica no último minuto de cada parte; em Intensidade e Eventos ao longo do tempo cada ação aparece no minuto em que aconteceu dentro da sua parte. O ⓘ por baixo dos gráficos explica.'],
   ['Exportar','<strong>Exportar estatísticas CSV</strong> e <strong>Exportar Eventos CSV</strong> (escolhes os tipos de eventos e a parte). Abre no Excel.']]],
  ['4. Complementar','Útil, mas opcional.',[
   ['Registo de outros eventos','Secção 6: avaliações (posicionamento, atitude, intensidade…) e notas, para um jogador ou para a equipa.'],
@@ -1088,7 +1097,7 @@ function download(name,text,type){
 const APP_VERSION='2026-10-15';
 const slug=v=>String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\//g,'-').replace(/[^\w-]+/g,'_').replace(/^_+|_+$/g,'');
 // AAAA-MM-DD_Escalao_Adversario.ext  (ex.: 2026-10-18_Infantis_B_2026-27_Leixoes.json)
-const fname=ext=>(session.date||'sem-data')+'_'+slug(ESCALAO)+'_'+(slug(session.opponent)||'adversario')+'.'+ext;
+const fname=ext=>(session.date||'sem-data')+'_'+slug(ESCALAO)+'_'+(slug(session.opponent)||'adversario')+(session.homeAway==='fora'?'_F':'_C')+'.'+ext;
 const EXPORT_CATS=[
  ['entsai','Entradas e saídas (ENT, SAI)',['ENT','SAI']],
  ['golos','Golos e assistências (GOL, GOS, ASS)',['GOL','GOS','ASS']],
@@ -1561,7 +1570,7 @@ function buildMapFilter(){
  const chk=OPTS.mapCodes;
  $('mapFilter').innerHTML=`<div class="small"><strong>Mostrar no mapa</strong></div>
   <div class="row" style="margin-top:4px;gap:12px">${MAP_TYPES.map(([c,l])=>`<label class="small" title="${l}" style="font-weight:400;display:flex;gap:4px;align-items:center;white-space:nowrap"><input type="checkbox" data-mc="${c}" ${chk.includes(c)?'checked':''}> <strong>${c}</strong></label>`).join('')}</div>
-  <div class="row" style="margin-top:6px;flex-wrap:nowrap">
+  <div class="row" style="margin-top:6px">
    <label class="small" title="Pontos, calor ofensivo (amarelo), calor defensivo (preto) ou os dois em simultâneo" style="font-weight:400;display:flex;gap:4px;align-items:center;white-space:nowrap">Vista <select id="mapViewSel" style="padding:4px"><option value="pts">Pontos</option><option value="off">Calor ofensivo</option><option value="def">Calor defensivo</option><option value="both">Calor ofensivo + defensivo</option></select></label>
    <label class="small" title="Filtra o mapa por parte" style="font-weight:400;display:flex;gap:4px;align-items:center;white-space:nowrap">Parte <select id="mapPartSel" style="padding:4px"><option value="0">Ambas</option><option value="1">1ª</option><option value="2">2ª</option></select></label>
    <label class="small" title="Filtra o mapa por jogador (Equipa = ações sem jogador)" style="font-weight:400;display:flex;gap:4px;align-items:center;flex:1;min-width:0">Jogador <select id="mapPlayerSel" style="padding:4px;flex:1;min-width:0;max-width:100%"><option value="">Todos</option><option value="team">Equipa</option></select></label>
