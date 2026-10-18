@@ -51,7 +51,14 @@ th,td{padding:6px;border-bottom:1px solid #eee6b8;font-size:13px;text-align:left
 .slotHeader .badge{font-weight:800;color:#111;font-size:13px}
 .swapBtn{margin-left:auto}
 .evgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;width:100%;margin-top:8px}
-.event-btn{border:none;color:#fff;padding:10px 4px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;min-height:44px;touch-action:manipulation}
+.event-btn{border:none;color:#fff;padding:10px 4px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;min-height:44px;touch-action:manipulation;position:relative;transition:transform .08s}
+/* reação ao registar: encolhe ao tocar, pisca a verde e mostra ✓ */
+.event-btn:active,.team-btn:active{transform:scale(.92)}
+.team-btn{position:relative;transition:transform .08s;touch-action:manipulation}
+.flash{animation:evflash .7s ease-out}
+.flash::after{content:'✓';position:absolute;top:-7px;right:-7px;width:20px;height:20px;border-radius:50%;background:#16a34a;color:#fff;font-size:13px;line-height:20px;text-align:center;font-weight:800;animation:evtick .9s ease-out forwards;pointer-events:none}
+@keyframes evflash{0%{transform:scale(.9);box-shadow:0 0 0 0 rgba(22,163,74,.95)}40%{transform:scale(1.06);box-shadow:0 0 0 6px rgba(22,163,74,.55)}100%{transform:scale(1);box-shadow:0 0 0 12px rgba(22,163,74,0)}}
+@keyframes evtick{0%{opacity:0;transform:scale(.4)}25%{opacity:1;transform:scale(1.15)}75%{opacity:1;transform:scale(1)}100%{opacity:0}}
 .pos-picker{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
 .pos-btn{border:1px solid #111;background:#fff;color:#111;font-size:12px;border-radius:999px;padding:4px 10px;cursor:pointer}
 .pos-btn.active{background:var(--y);color:#111;border-color:#111;font-weight:700}
@@ -270,7 +277,7 @@ canvas{width:100%!important;height:300px!important}
 
 <script>
 /* ===== ÚNICA LINHA A ALTERAR PARA OUTRO ESCALÃO ===== */
-const ESCALAO='Juvenis 2026/27';
+const ESCALAO='Iniciados A e Juvenis 2026/27';
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const pad=n=>String(n).padStart(2,'0');
@@ -653,9 +660,11 @@ function graphBucket(ev){
 function updateGraphLimitNote(){
  const el=$('graphTimeNote');if(!el)return;
  const n=graphPeriodMinutes();
- const t='Escala gráfica: '+n+' min por parte / '+(2*n)+' min no total. O tempo adicional é concentrado no último minuto de cada parte.';
+ const t='Tempo em jogo e Entradas/Saídas: escala fixa de '+n+' min por parte (a 2ª parte começa sempre aos '+n+' min; o tempo adicional fica no último minuto de cada parte). Intensidade e Eventos ao longo do tempo: tempo real em que as ações aconteceram.';
  el.title=t;
- ['chartPlayerMinutes','chartIntensity','chartEntSai','chartEventsTimeline'].forEach(id=>{const c=$(id);if(c)c.title=t});
+ ['chartPlayerMinutes','chartEntSai'].forEach(id=>{const c=$(id);if(c)c.title=t});
+ const r='Tempo real: a 2ª parte começa quando acabou a 1ª ('+mmss(partElapsed(1))+').';
+ ['chartIntensity','chartEventsTimeline'].forEach(id=>{const c=$(id);if(c)c.title=r});
 }
 
 const EV_CATS=['Entradas/Saídas','Golos','Remates','Recuperações/Perdas','Faltas','Defesa do GR','Desconto de tempo / Pausa'];
@@ -706,11 +715,14 @@ const RADAR_STYLES=[
 ];
 let radarSel=new Set();
 
+// tempo real desde o início do jogo: a 2ª parte começa no fim real da 1ª
+const realSec=ev=>(eventPart(ev)===2?partElapsed(1):0)+eventSecond(ev);
+const realTotalMin=()=>Math.max(2*graphPeriodMinutes(),Math.ceil((partElapsed(1)+partElapsed(2))/60));
 const halfTimeLinePlugin={
  id:'halfTimeLine',
  afterDraw(chart){
   if(!session.part1_ended&&!session.part2_start)return;
-   const{ctx,chartArea:{top,bottom},scales:{x}}=chart,pm=graphPeriodMinutes();
+   const{ctx,chartArea:{top,bottom},scales:{x}}=chart,pm=chart.$half!=null?chart.$half:graphPeriodMinutes();
   const xp=x.getPixelForValue(pm);
   ctx.save();ctx.strokeStyle='#111';ctx.lineWidth=2;ctx.setLineDash([5,4]);ctx.beginPath();ctx.moveTo(xp,top);ctx.lineTo(xp,bottom);ctx.stroke();ctx.setLineDash([]);
   ctx.fillStyle='#111';ctx.font='11px Inter,Arial,sans-serif';ctx.textAlign='center';ctx.textBaseline='top';
@@ -731,7 +743,7 @@ function initCharts(){
    scales:{x:{stacked:true},y:{stacked:true,beginAtZero:true,ticks:{precision:0}}}}});
  charts.act=new Chart($('chartActions'),{type:'bar',data:{labels:['Golos','Remates AB','Remates F','Recup.','Perdas','Assist.','F.Cometidas','F.Sofridas','Defesas GR'],datasets:[{label:'Totais',data:[],backgroundColor:'#111'}]},options:o('Principais estatísticas do jogo')});
  const oi=o('Intensidade Ofensiva (GOL, RAB, RFB) vs Defensiva (DEF, RSO, GOS)');oi.plugins.legend.display=true;oi.scales.x={ticks:{maxTicksLimit:11}};
- charts.int=new Chart($('chartIntensity'),{type:'line',data:{labels:[],datasets:[{label:'Ofensiva (Beira-Mar)',data:[],tension:.25,borderColor:'#E0A000',backgroundColor:'#E0A000',borderWidth:3},{label:'Defensiva (adversário)',data:[],tension:.25,borderColor:'#111',backgroundColor:'#111'}]},options:oi});
+ charts.int=new Chart($('chartIntensity'),{type:'line',data:{labels:[],datasets:[{label:'Ofensiva (Beira-Mar)',data:[],tension:.25,borderColor:'#E0A000',backgroundColor:'#E0A000',borderWidth:3},{label:'Defensiva (adversário)',data:[],tension:.25,borderColor:'#111',backgroundColor:'#111'}]},options:oi,plugins:[halfTimeLinePlugin]});
 
  charts.entsai=new Chart($('chartEntSai'),{type:'bar',data:{labels:[],datasets:[]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
   plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>{const v=c.raw;return Array.isArray(v)?`${v[0]}' – ${v[1]}'`:''}}}},
@@ -827,13 +839,13 @@ function updateRadar(){
 }
 function updateEventsTimeline(){
  if(!charts.evTimeline)return;
- const limit=graphPeriodMinutes(),byCode={},sameCodeAtMinute={};
+ const byCode={},sameCodeAtMinute={},total=realTotalMin();
  queue.slice().sort((a,b)=>gAbsMin(a)-gAbsMin(b)).forEach(ev=>{
   const code=ev.event_code,cat=EV_CAT_OF[code];
   if(!cat)return;
   const part=eventPart(ev),seconds=eventSecond(ev,part);
-  const plotted=graphEventMinute(ev);
-  const key=code+'|'+Math.floor(Math.min(part*limit-1e-8,plotted));
+  const plotted=realSec(ev)/60;
+  const key=code+'|'+Math.floor(plotted);
   const dup=sameCodeAtMinute[key]||0;
   sameCodeAtMinute[key]=dup+1;
   const base=TIMELINE_Y_BASE[code]||0;
@@ -841,8 +853,7 @@ function updateEventsTimeline(){
   if(base>0)extra=Math.max(-0.24,extra);
   if(base<0)extra=Math.min(0.24,extra);
   const y=EV_CAT_POS[cat]+base+extra;
-  // Avoid horizontal markers leaking beyond 25/50 when many coincide.
-  const x=Math.min(part*limit,plotted+(dup>6?(dup-6)*0.008:0));
+  const x=Math.min(total,plotted+(dup>6?(dup-6)*0.008:0));
   (byCode[code]=byCode[code]||[]).push({x,y,part,seconds});
  });
  charts.evTimeline.data.datasets=TIMELINE_CODES.filter(code=>byCode[code]?.length).map(code=>{
@@ -851,11 +862,11 @@ function updateEventsTimeline(){
    borderWidth:2,pointStyle:st.pointStyle,pointRotation:st.rotation||0,
    pointRadius:7,pointHoverRadius:9,pointBorderWidth:2};
  });
- charts.evTimeline.options.scales.x.max=2*limit;
+ charts.evTimeline.options.scales.x.max=total;
+ charts.evTimeline.$half=partElapsed(1)/60;
  charts.evTimeline.options.plugins.tooltip.callbacks.label=c=>{
   const d=c.raw;
-  return c.dataset.label+' - '+d.part+'\u00aa parte, '+fmt(d.seconds)+
-    (d.seconds>limit*60?' (acumulado no último minuto gráfico)':'');
+  return c.dataset.label+' - '+d.part+'\u00aa parte, '+fmt(d.seconds);
  };
  charts.evTimeline.update('none');
 }
@@ -888,18 +899,19 @@ function refreshTimeCharts(){
 function renderCharts(){
  if(!charts.min)return;
  refreshTimeCharts();
- const limit=graphPeriodMinutes(),total=2*limit;
+ const total=realTotalMin();
  const attack=new Array(total).fill(0),defense=new Array(total).fill(0);
  charts.act.data.datasets[0].data=['GOL','RAB','RFB','REC','PER','ASS','FCO','FSO','DEF'].map(totalOf);
- // Every event past the cap remains counted, but in minute 25 or 50.
+ // cada ação conta no minuto real em que aconteceu (sem comprimir o tempo adicional)
  queue.forEach(ev=>{
-  const i=graphBucket(ev);
+  const i=Math.min(total-1,Math.floor(realSec(ev)/60));
   if(['GOL','RAB','RFB'].includes(ev.event_code))attack[i]++;
   if(['DEF','RSO','GOS'].includes(ev.event_code))defense[i]++;
  });
  charts.int.data.labels=attack.map((_,i)=>(i+1)+"'");
  charts.int.data.datasets[0].data=attack;
  charts.int.data.datasets[1].data=defense;
+ charts.int.$half=partElapsed(1)/60-.5;
  updateRadar();updateEventsTimeline();
  [charts.act,charts.int].forEach(c=>c?.update('none'));
  lastMin=currentAbsMin();lastQ=queue.length;
@@ -943,7 +955,7 @@ const GUIDE=[
   ['Resumo do jogo','Golos marcados e sofridos por forma, e remates com local. Só aparece quando há perguntas de local/forma ligadas nas opções de registo ou golos/remates com local ou forma já registados.'],
   ['Mapa do campo','Escolhe o que mostrar (GOL, GOS, RAB, RFB, RSO, DEF), a parte e o jogador. Em <strong>Vista</strong>: pontos, calor ofensivo (amarelo), calor defensivo (preto) ou os dois.'],
   ['Estatísticas por jogador','Tempo em jogo, golos, assistências, remates, <strong>eficácia</strong> (golos ÷ remates), recuperações, perdas e faltas. <strong>Env. of.</strong> (GOL, ASS, RAB, RFB, FSO, PER), <strong>Env. def.</strong> (REC, FCO) e <strong>Env. total</strong> contam a participação do jogador nas ações; a % ao lado é a fatia das ações da equipa em que participou enquanto esteve em campo. O <strong>Índice</strong> mede o valor das ações (golo +3, assistência +2, remate à baliza e recuperação +1, falta sofrida e remate fora +0,5, perda −1, falta cometida −0,5); os pesos mudam-se em ⚙ Opções de registo. Em <strong>Por 40 min</strong> os valores ficam comparáveis entre quem jogou pouco e muito.'],
-  ['Gráficos','Tempo por jogador, principais ações, intensidade ofensiva vs defensiva, entradas e saídas, radar para comparar jogadores e eventos ao longo do tempo. O ⓘ por baixo dos gráficos explica a escala de tempo.'],
+  ['Gráficos','Tempo por jogador, principais ações, intensidade ofensiva vs defensiva, entradas e saídas, radar para comparar jogadores e eventos ao longo do tempo. Tempo em jogo e Entradas/Saídas usam uma escala fixa (a 2ª parte começa sempre aos 25 min); Intensidade e Eventos ao longo do tempo mostram o tempo real em que as ações aconteceram. O ⓘ por baixo dos gráficos explica.'],
   ['Exportar','<strong>Exportar estatísticas CSV</strong> e <strong>Exportar Eventos CSV</strong> (escolhes os tipos de eventos e a parte). Abre no Excel.']]],
  ['4. Complementar','Útil, mas opcional.',[
   ['Registo de outros eventos','Secção 6: avaliações (posicionamento, atitude, intensidade…) e notas, para um jogador ou para a equipa.'],
@@ -991,11 +1003,16 @@ function enter(num){
  onField[i]={number:num,position:null};add(num,'ENT');saveAll();
 }
 // botão ASS (só aparece com a pergunta das assistências desligada): liga ao último golo ainda sem assistência
+// confirma visualmente que o evento ficou registado (o cartão é redesenhado, por isso procura-se o botão novo)
+function flashBtn(sel){
+ try{if(navigator.vibrate)navigator.vibrate(25)}catch{}
+ requestAnimationFrame(()=>{const b=document.querySelector(sel);if(!b)return;b.classList.remove('flash');void b.offsetWidth;b.classList.add('flash');setTimeout(()=>b.classList.remove('flash'),950)});
+}
 function assistBtn(n){
  const g=[...queue].reverse().find(e=>e.event_code==='GOL'&&Number(e.player_id)!==n&&!goalAssistEvent(e)&&e.assist_player_id==null);
  if(!g)return toast('Não há nenhum golo sem assistência para ligar. Regista primeiro o golo.');
  const n0=queue.length;setGoalAssistant(g,n);const a=goalAssistEvent(g);if(a&&curAct)a.act_id=curAct;
- saveAll();toast('Assistência de '+n+' no golo de '+g.player_id+' ('+g.minute+"')");
+ saveAll();toast('Assistência de '+n+' no golo de '+g.player_id+' ('+g.minute+"')");return true;
 }
 function goal(num){
  add(num,'GOL');const ev=queue[queue.length-1];saveAll();goalInfo(ev,false,true);
@@ -1009,9 +1026,9 @@ document.addEventListener('click',e=>{
  if(b=t.closest('.swapBtn')){const i=+b.dataset.idx;swapIdx=swapIdx===i?null:i;renderRoster();renderField();if(swapIdx!==null){toast('Escolhe nos convocados quem entra');scrollToEl($('roster').closest('.card'))}return}
  if(b=t.closest('.slotRemove')){const i=+b.dataset.idx,en=onField[i];if(en)add(en.number,'SAI');onField[i]=null;swapIdx=null;saveAll();return}
  if((b=t.closest('.event-btn,[data-team]'))&&!session.currentPart)return toast(session.part1_ended&&!session.part2_start?'Intervalo: inicia a 2ª parte antes de registar ações':session.part2_ended?'O jogo terminou. Para acrescentar eventos usa a secção 6 ou as correções':'Inicia a 1ª parte antes de registar ações');
- if(b=t.closest('.event-btn')){const n=+b.dataset.num,c=b.dataset.code;if(c==='ASS')return assistBtn(n);if(c==='GOL')goal(n);else{add(n,c);saveAll();if(c==='RAB'||c==='RFB')shotLoc(queue[queue.length-1])}return}
+ if(b=t.closest('.event-btn')){const n=+b.dataset.num,c=b.dataset.code,sel=`.event-btn[data-num="${n}"][data-code="${c}"]`;if(c==='ASS'){if(assistBtn(n))flashBtn(sel);return}if(c==='GOL')goal(n);else{add(n,c);saveAll();if(c==='RAB'||c==='RFB')shotLoc(queue[queue.length-1])}flashBtn(sel);return}
  if(b=t.closest('.delEv')){const i=+b.dataset.i;if(queue[i]&&isMove(queue[i].event_code))return deleteMove(queue[i]);if(confirm('Anular o evento #'+(i+1)+'?'))delEvent(i);return}
- if(b=t.closest('[data-team]')){const tc=b.dataset.team;add(null,tc);saveAll();if(tc==='GOS')goalInfo(queue[queue.length-1]);else if(tc==='RSO'||tc==='DEF')shotLoc(queue[queue.length-1]);return}
+ if(b=t.closest('[data-team]')){const tc=b.dataset.team;add(null,tc);saveAll();flashBtn(`[data-team="${tc}"]`);if(tc==='GOS')goalInfo(queue[queue.length-1]);else if(tc==='RSO'||tc==='DEF')shotLoc(queue[queue.length-1]);return}
 });
 $('clearSlots').onclick=()=>{
  if(!confirm('Remover todos os jogadores do campo?'))return;
